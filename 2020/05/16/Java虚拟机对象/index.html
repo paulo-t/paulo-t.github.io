@@ -17,7 +17,7 @@
   <meta name="description" content="">
   <meta name="author" content="Paulo Tian">
   <meta name="keywords" content="">
-  <title>Java内存区域划分 - Paulo&#39;s Blog</title>
+  <title>Java虚拟机对象 - Paulo&#39;s Blog</title>
 
   <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
 <link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
@@ -132,7 +132,7 @@
               
                 <div class="mt-3 post-meta">
                   <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-                  <time datetime="2020-05-16 15:18">
+                  <time datetime="2020-05-16 20:33">
                     May 16, 2020 pm
                   </time>
                 </div>
@@ -143,7 +143,7 @@
                   
                   <span class="post-meta mr-2">
                     <i class="iconfont icon-chart"></i>
-                    1.7k 字
+                    1.4k 字
                   </span>
                 
 
@@ -153,7 +153,7 @@
                       <i class="iconfont icon-clock-fill"></i>
                     
                     
-                    17
+                    14
                      分钟
                   </span>
                 
@@ -182,32 +182,25 @@
           <div class="post-content mx-auto" id="post">
             
             <article class="markdown-body">
-              <p>Java程序执行时是交给JVM执行的，所以我们在谈论Java内存区域划分的时候实际上指的是JVM内存区域划分。在讨论JVM内存区域划分之前先来看一下Java程序的具体执行流程。</p>
-<p><img src="Java%E7%A8%8B%E5%BA%8F%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B.png" srcset="/img/loading.gif" alt="alt"></p>
-<p>如上图所示，首先Java源代码文件(.Java)文件会被Java编译器编译成字节码文件(.Class), 然后由JVM中的类加载器加载各个类的字节码文件，加载完毕后交由Java执行引擎执行， JVM会用一些空间来存储执行期间所用到的数据， 这些空间被称为Runtime Data Area(运行时数据区)， 也就是我们常说的JVM内存。</p>
-<p>Java虚拟机在执行JAVA程序的时候回把它所管理的内存划分成为若干个不同的数据区。这些区域有各自的用途，以及创建销毁时间。具体的划分如下:</p>
-<p><img src="%E8%BF%90%E8%A1%8C%E6%97%B6%E6%95%B0%E6%8D%AE%E5%8C%BA.png" srcset="/img/loading.gif" alt="alt"></p>
-<h2 id="程序计数器"><a href="#程序计数器" class="headerlink" title="程序计数器"></a>程序计数器</h2><p>程序计数器是一块很小的内存空间，它可以看做是当前所执行的字节码的行号指示器。由于Java的多线程是通过线程间轮流切换、分配处理器执行时间的方式来实现的，在任意一个时刻一个处理器只能执行一个线程的指令，为了线程切换后能恢复到正确的执行位置，每一个线程都需要一个独立的程序计数器。<br>如果线程执行的是一个Java方法，计数器记录的是正在执行的虚拟字节码的指令地址；如果正在执行的是本地方法(Native),这个计数器为空。此内存区域是唯一一个在《Java虚拟机规范》中没有规定任何OutOfMemory的区域。</p>
-<h2 id="Java虚拟机栈"><a href="#Java虚拟机栈" class="headerlink" title="Java虚拟机栈"></a>Java虚拟机栈</h2><p>与程序计数器一样，Java虚拟机栈也是线程私有的，他的生命周期与线程相同。每个方法被执行的时候，Java虚拟机都会创建一个栈帧用于存储局部变量、操作数栈、动态连接、方法出口等信息。</p>
-<p>局部变量表存放了编译期间可知的各种Java虚拟机基本数据类型、对象引用和returnAddress(指向一条字节码指令的地址)</p>
-<p>这些数据类型在局部变量表中的存储空间以局部变量槽(Slot)来表示，其中64位的long和double类型的数据会占用两个Slot，其余的数据类型数据只会占用一个。局部变量表所需的内存空间在编译期间分配完成，当进入一个方法时，这个方法需要在栈帧中分配多大的局部变量表空间是确定的，在方法执行期间不会改变局部变量表的大小。</p>
-<p>在《Java虚拟机规范》中规定了两类异常情况:如果线程请求的栈深度大于虚拟机所允许的深度，将抛出StackOverFlow异常；如果Java虚拟机栈容量可动态扩展，当栈扩展时无法申请到足够的内存会抛出OutOfMemoryError异常。</p>
-<h2 id="本地方法栈"><a href="#本地方法栈" class="headerlink" title="本地方法栈"></a>本地方法栈</h2><p>本地方法栈和虚拟机栈的作用是相似的，区别只是本地方法栈服务于本地(Native)方法。、</p>
-<h2 id="Java堆"><a href="#Java堆" class="headerlink" title="Java堆"></a>Java堆</h2><p>Java堆是所有线程共享的一块区域，在虚拟机启动时创建。此区域的唯一目的就是存放Java对象实例。</p>
-<p>Java堆是垃圾收集器管理的内存区域。由于现代垃圾回收器大部分是基于分代回收理论设计的，所以Java堆中经常会出现”新生代” “老年代” “永久代” “From Survivor空间” “TO Survivor空间”等名词。</p>
-<p>所有线程共享的Java堆可以划分出多个线程私有的分配缓冲区，以提升对象分配的效率，Java堆细分的目的是为了更好的回收内存或者更快的分配内存，不会改变Java堆存储内容的共性。</p>
-<p>现在主流Java虚拟机的堆内存都是可以扩展的，如果在Java堆中没有内存完成实例分配，并且堆也无法扩展时，Java将会抛出OutOfMemoryError异常。</p>
-<h2 id="方法区"><a href="#方法区" class="headerlink" title="方法区"></a>方法区</h2><p>方法区和Java堆一样，是各个线程共享的内存区域，它用于存储已被虚拟机加载的类型信息、常量、静态变量、即时编译器编译后的代码缓存等数据。垃圾收集器行为在这个区域很少出现。这块区域的内存回收主要是针对常量池的回收和类型卸载。</p>
-<p>根据《Java虚拟机规范》规定，如果方法区无法满足新的内存分配需求时，将会抛出OutOfMemoryError异常。</p>
-<h3 id="运行时常量池"><a href="#运行时常量池" class="headerlink" title="运行时常量池"></a>运行时常量池</h3><p>运行时常量池是方法区的一部分，Class文件中除了有类的版本、字段、方法、接口描述等信息，还有一项常量池表，用于存放编译期间产生的各种字面量和符号引用，这部分内容在类加载后存放到运行时常量池中。</p>
-<hr>
-<p><font size= 1>tips: 符号引用可以是任何形式的字面量，只要能无歧义的定位到目标即可。在编译时Java类并不知道所引用类的地址，只能用符号引用代替，在JVM加载类的过程中会把符号引用替换成为直接引用</font></p>
-<hr>
-<p>并非只有预置入Class文件中常量池的内容才可以进入运行实时常量池，运行期间也可以将新的常量放入常量池中，用的比较多的是String类的intern()方法。</p>
-<p>既然运行时常量池是方法区的一部分，自然也受到方法区内存的限制，当常量池无法再申请到内存时会抛出OutOfMemoryError异常。</p>
-<h2 id="直接内存"><a href="#直接内存" class="headerlink" title="直接内存"></a>直接内存</h2><p>直接内存不是虚拟机运行时数据区的一部分，也不是《Java虚拟机规范》中定义的内存区域。但是这一部分的内存也被频繁使用。</p>
-<p>在JDK1.4中加入了NIO(New Input/Output)类，引入一种基于通道与缓冲区(Buffer)的IO方式，它可以使用Native函数库直接分配堆外内存，然后通过一个存储在Java堆里面的DirectByteBuffer对象作为这块内存的引用进行操作。</p>
-<p>本机直接内存的大小不会受到Java堆大小的限制，但是会受到本机总内存的限制，一般服务器管理者配置虚拟机参数时会根据实际需要去设置-Xmx等信息，但通常会忽略直接内存，从而导致动态扩展时出现OutOfMemoryError异常。</p>
+              <p>虚拟机创建对象包含以下几个部分:</p>
+<ul>
+<li>当Java虚拟机遇到一个New指令时首先将去检查这个指令的参数是否能在常量池中定位到一个类的符号引用，并检查这个符号引用代表的类是否已经被加载、解析和初始化过。如果没有，那必须先执行相应的类的加载。</li>
+<li>接下来虚拟机将为新生对象分配内存。对象所需要的的内存大小在类加载完成后便可完全确定，为对象分配空间的任务实际上便等同于把一块确定大小的内存从Java堆中划分出来。假设Java堆中内存时绝对规整的，所有被使用的内存放到一边，空闲的内存放到另外一边，中间放着一个指针作为分解指示器，那分配内存就是把指针向空闲的空间方向挪动一段与对象大小相等的举例，这种分配方式叫做”指针碰撞”。如果Java堆中的内存不是工整的，已经使用和空闲的交错在一起，虚拟机必须维护一个表，记录哪些内存是可用的，在分配的时候从列表中飞找到一块足够大的空间划分给对象实例，并更新表上的记录，这种分配方式成为”空闲列表”。选择哪种分配方式是由Java堆是否规整决定的，而Java堆是否规整又由采用的垃圾回收器是否有空间压缩整理的能力决定。<br>处理如何划分可用空间之外还有一个需要考虑的问题:对象创建在虚拟机中是非常频繁的行为。及时仅仅司改一个指针所指的位置，在并发情况下也并不是线程安全的。解决这个问题有两种方案。一种是对分配存储空间的动作进行同步处理,实际上是采用CAS配上失败重试保证更新操作的原子性；另外一种是把内存分配的动作按照线程划分到不同的空间区域进行，即每个线程在Java堆中预先分配一小块内存，那个线程要分配内存就在哪个线程的本地缓冲区分配，只有本地缓冲区用完了，分配新的缓冲区时才需要同步锁定。</li>
+<li>内存分配完成之后，虚拟机必须将分配到的内存空间都初始化为零值，保证对象的实例在Java代码中介意不赋初始值也可以使用。</li>
+<li>接下来Java虚拟机还要对对象进行必要的设置，例如这个对象是哪个类的实例、如何才能找到类的元数据信息、对象的Hash码(实际调用对象的hashCode()方法时才会计算)、对象的GC分代年龄信息。</li>
+<li>最后会执行<init>()方法，按照程序员的意愿对对象进行初始化。</li>
+</ul>
+<h2 id="对象的内存布局"><a href="#对象的内存布局" class="headerlink" title="对象的内存布局"></a>对象的内存布局</h2><p>对象在堆中的存储布局可以划分为三个部分:对象头(Header)、实例数据(Instance Data)和对齐填充(Padding)。</p>
+<p>HotSpot虚拟机的对象头包括两类信息。第一类是运行时数据，如Hash码、GC分代年龄、所状态标志、线程持有的锁、线程偏移量ID、偏向时间戳等。这部分数据的长度在32和64位的机器上分别为32位和64位。对象头的另一部分是类型指针，即对象指向它的类型元数据的指针，Java虚拟机通过这个指针来确定该对象是哪个类的实例，并不是所有的虚拟机实现都必须在对象数据上保留类型指针即查找对象的元数据并不一定要通过对象本身。</p>
+<p>接下来实例数据部分整是对象真正存储的有效信息，即在程序代码中所定义的各种类型的字段内容。HotSpot虚拟机默认的分配顺序为longs/doubles、ints、shorts/chars、bytes/booleans、oops。相同宽度的字段总是被分配到一起，在满足这个条件的前提下，在父类中定义的变量会出现在自雷之前。</p>
+<p>第三部分是对齐填充。造HotSpot中任何对象的大小都必须是8字节的整数倍，所以需要填充位。</p>
+<h2 id="对象的访问定位"><a href="#对象的访问定位" class="headerlink" title="对象的访问定位"></a>对象的访问定位</h2><p>在《Java虚拟机规范》中止规定了reference类型是一个对象的引用，没有规定这个引用应该通过什么方式去定位、访问到堆中对象的具体位置。主流的访问方式有句柄和直接引用两种:</p>
+<ul>
+<li><p>句柄引用<br>Java堆中换分出一块内存来存放句柄池，reference中存放的是句柄的地址。句柄中包含了对象实例数据与数据类型具体的地址信息。使用句柄最大的好处就是对象呗移动时只需要改变句柄中实例数据指针，reference不需要修改。<br><img src="%E5%8F%A5%E6%9F%84%E6%96%B9%E5%BC%8F%E5%AE%9A%E4%BD%8D%E6%95%B0%E6%8D%AE.png" srcset="/img/loading.gif" alt="alt"></p>
+</li>
+<li><p>直接引用<br>使用直接引用需要考虑如何存放对象的类型信息，reference中存储的直接就是对象地址。使用直接引用最大的好处就是速度更快，他节省了一次指针定位的时间开销。<br><img src="%E7%9B%B4%E6%8E%A5%E5%BC%95%E7%94%A8%E6%B3%95.png" srcset="/img/loading.gif" alt="alt"></p>
+</li>
+</ul>
 
             </article>
             <hr>
@@ -238,18 +231,12 @@
                   <div class="post-prev col-6">
                     
                     
-                      <a href="/2020/05/16/Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AF%B9%E8%B1%A1/">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Java虚拟机对象</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </div>
                   <div class="post-next col-6">
                     
                     
-                      <a href="/2020/04/20/hello-world/">
-                        <span class="hidden-mobile">Hello World</span>
+                      <a href="/2020/05/16/Java%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F%E5%88%92%E5%88%86/">
+                        <span class="hidden-mobile">Java内存区域划分</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
@@ -389,7 +376,7 @@
     var typed = new Typed('#subtitle', {
       strings: [
         '  ',
-        "Java内存区域划分&nbsp;",
+        "Java虚拟机对象&nbsp;",
       ],
       cursorChar: "_",
       typeSpeed: 70,
