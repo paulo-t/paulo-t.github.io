@@ -143,7 +143,7 @@
                   
                   <span class="post-meta mr-2">
                     <i class="iconfont icon-chart"></i>
-                    1.2k 字
+                    2.2k 字
                   </span>
                 
 
@@ -153,7 +153,7 @@
                       <i class="iconfont icon-clock-fill"></i>
                     
                     
-                    15
+                    27
                      分钟
                   </span>
                 
@@ -266,6 +266,68 @@
 <hr>
 <p>程序最终会得到OutOfMemoryError的异常。</p>
 <p>出现StackOverFlow时会有明确的错误可以分析。如果使用HotSpot虚拟机默认参数，栈深度再大多数情况下到达1000-2000时没问题的。如果是由于建立线程太多导致内存溢出，再不能减少线程的情况下只能通过减少最大堆和减少栈容量来换取更多的线程。</p>
+<h2 id="方法区和运行时常量池溢出"><a href="#方法区和运行时常量池溢出" class="headerlink" title="方法区和运行时常量池溢出"></a>方法区和运行时常量池溢出</h2><p>HotSpot从Jdk7开始逐步”去永久代计划”，并且在JDK8中完全使用元空间来代替永久代。String::intern()是一个本地方法，它的作用是如果字符串常量池中已经包含一个等于此String的常量，则返回常量池中代表这个字符串的引用，否则会将String对象包含的字符串添加到常量池，并且返回此String对象的引用。在JDK6或者更早之前的HotSpot中，常量池在永久代中在JDK7或者更高的版本中将原本放在永久区的字符串常量池移到了堆内存中，这会引申出一些有意思的影响。</p>
+<pre><code class="hljs arduino"><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ConstPoolOOM</span> &#123;</span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-keyword">String</span>[] args)</span> </span>&#123;
+        <span class="hljs-keyword">String</span> str1 = <span class="hljs-keyword">new</span> StringBuilder(<span class="hljs-string">"计算机"</span>).append(<span class="hljs-string">"软件"</span>).toString();
+        System.out.<span class="hljs-built_in">println</span>(str1.intern() == str1);
+
+        <span class="hljs-keyword">String</span> str2 = <span class="hljs-keyword">new</span> StringBuilder(<span class="hljs-string">"ja"</span>).append(<span class="hljs-string">"va"</span>).toString();
+        System.out.<span class="hljs-built_in">println</span>(str2.intern() == str2);
+    &#125;
+&#125;</code></pre>
+
+<p>上面的代码再JDK6以及之前的环境中运行会返回两个false，再JDK7及以上的环境中运行会返回一个true和一个false。再JDK6及以前的环境中intern()会把首次遇到的字符串实例复制到永久代的常量池中，返回的也是永久代的地址，而StringBuilder创建的对象再Java堆中，所以会返回false。</p>
+<p>在JDK7及以上的环境中常量池已经移到了Java堆中，只需要在常量池中记录一下字符串首次出现的引用即可，因此str1比较返回的时true。而”java”这个字符串之前已经出现过，返回的时第一次出现的引用，所以str2比较的结果为false。</p>
+<p>因为运行时常量池在JDK7后移到了Java堆中，可以通过-Xmx减少堆的大小来测试溢出。</p>
+<pre><code class="hljs arduino"><span class="hljs-comment">/**</span>
+<span class="hljs-comment"> * VM Options -Xmx1M</span>
+<span class="hljs-comment"> */</span>
+<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ConstPoolOOM</span> &#123;</span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-keyword">String</span>[] args)</span> </span>&#123;
+        List&lt;<span class="hljs-keyword">String</span>&gt; <span class="hljs-built_in">list</span> = <span class="hljs-keyword">new</span> ArrayList&lt;<span class="hljs-keyword">String</span>&gt;();
+        <span class="hljs-keyword">int</span> i= <span class="hljs-number">0</span>;
+
+        <span class="hljs-keyword">while</span>(<span class="hljs-literal">true</span>)&#123;
+            <span class="hljs-built_in">list</span>.add(<span class="hljs-keyword">String</span>.valueOf(i++).intern());
+        &#125;
+    &#125;
+&#125;</code></pre>
+
+<p>运行结果:</p>
+<pre><code class="hljs css"><span class="hljs-selector-tag">Exception</span> <span class="hljs-selector-tag">in</span> <span class="hljs-selector-tag">thread</span> "<span class="hljs-selector-tag">main</span>" <span class="hljs-selector-tag">java</span><span class="hljs-selector-class">.lang</span><span class="hljs-selector-class">.OutOfMemoryError</span>: <span class="hljs-selector-tag">Java</span> <span class="hljs-selector-tag">heap</span> <span class="hljs-selector-tag">space</span>
+	<span class="hljs-selector-tag">at</span> <span class="hljs-selector-tag">java</span><span class="hljs-selector-class">.util</span><span class="hljs-selector-class">.Arrays</span><span class="hljs-selector-class">.copyOf</span>(<span class="hljs-selector-tag">Arrays</span><span class="hljs-selector-class">.java</span><span class="hljs-selector-pseudo">:3210)</span>
+	<span class="hljs-selector-tag">at</span> <span class="hljs-selector-tag">java</span><span class="hljs-selector-class">.util</span><span class="hljs-selector-class">.Arrays</span><span class="hljs-selector-class">.copyOf</span>(<span class="hljs-selector-tag">Arrays</span><span class="hljs-selector-class">.java</span><span class="hljs-selector-pseudo">:3181)</span>
+	<span class="hljs-selector-tag">at</span> <span class="hljs-selector-tag">java</span><span class="hljs-selector-class">.util</span><span class="hljs-selector-class">.ArrayList</span><span class="hljs-selector-class">.grow</span>(<span class="hljs-selector-tag">ArrayList</span><span class="hljs-selector-class">.java</span><span class="hljs-selector-pseudo">:265)</span>
+	<span class="hljs-selector-tag">at</span> <span class="hljs-selector-tag">java</span><span class="hljs-selector-class">.util</span><span class="hljs-selector-class">.ArrayList</span><span class="hljs-selector-class">.ensureExplicitCapacity</span>(<span class="hljs-selector-tag">ArrayList</span><span class="hljs-selector-class">.java</span><span class="hljs-selector-pseudo">:239)</span>
+	<span class="hljs-selector-tag">at</span> <span class="hljs-selector-tag">java</span><span class="hljs-selector-class">.util</span><span class="hljs-selector-class">.ArrayList</span><span class="hljs-selector-class">.ensureCapacityInternal</span>(<span class="hljs-selector-tag">ArrayList</span><span class="hljs-selector-class">.java</span><span class="hljs-selector-pseudo">:231)</span>
+	<span class="hljs-selector-tag">at</span> <span class="hljs-selector-tag">java</span><span class="hljs-selector-class">.util</span><span class="hljs-selector-class">.ArrayList</span><span class="hljs-selector-class">.add</span>(<span class="hljs-selector-tag">ArrayList</span><span class="hljs-selector-class">.java</span><span class="hljs-selector-pseudo">:462)</span>
+	<span class="hljs-selector-tag">at</span> <span class="hljs-selector-tag">com</span><span class="hljs-selector-class">.paulo</span><span class="hljs-selector-class">.jvmBase</span><span class="hljs-selector-class">.ConstPoolOOM</span><span class="hljs-selector-class">.main</span>(<span class="hljs-selector-tag">ConstPoolOOM</span><span class="hljs-selector-class">.java</span><span class="hljs-selector-pseudo">:15)</span></code></pre>
+
+<p>我们再来看看方法区其它部分的内容，方法区主要存放已经加载的类型信息，如类名、访问修饰符、常量池、字段描述、字段方法等。对于这部分的测试，可以在运行时产生大量的类去填满。</p>
+<pre><code class="hljs java"><span class="hljs-comment">/**</span>
+<span class="hljs-comment"> * VM Arg: -XX:PermSize=10M -XX:MaxPermSize=10M</span>
+<span class="hljs-comment"> */</span>
+<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">JavaMethodAreaOOM</span> </span>&#123;
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">main</span><span class="hljs-params">(String[] args)</span> </span>&#123;
+        <span class="hljs-keyword">while</span>(<span class="hljs-keyword">true</span>)&#123;
+            Enhancer enhancer = <span class="hljs-keyword">new</span> Enhancer();
+            enhancer.setSuperclass(OOMObject<span class="hljs-class">.<span class="hljs-keyword">class</span>)</span>;
+            enhancer.setUseCache(<span class="hljs-keyword">false</span>);
+            enhancer.setCallback(<span class="hljs-keyword">new</span> MethodInterceptor() &#123;
+                <span class="hljs-function"><span class="hljs-keyword">public</span> Object <span class="hljs-title">intercept</span><span class="hljs-params">(Object o, Method method, Object[] args, MethodProxy proxy)</span> <span class="hljs-keyword">throws</span> Throwable </span>&#123;
+                    <span class="hljs-keyword">return</span> proxy.invokeSuper(o,args);
+                &#125;
+            &#125;);
+            enhancer.create();
+        &#125;
+    &#125;
+    <span class="hljs-keyword">static</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">OOMObject</span></span>&#123;&#125;
+&#125;</code></pre>
+
+<p>类似这样的代码很可能出现在实际应用中，当前的很多主流框架如Spring对类进行增强时会使用CGLib这类字节码技术。很多运行在Java虚拟机上的动态语言(例如Groovy)通常都会创建新类型支撑语言的动态性，随着这类语言的流行，方法区也越来越容易溢出。</p>
+<p>在JDK8以后，永久代便完全退出了历史舞台，元空间作为代替者登场。在默认设置下前面创建新的动态类型的测试用力很难在迫使虚拟机方法去产生异常了。</p>
+<h2 id="本机直接内存溢出"><a href="#本机直接内存溢出" class="headerlink" title="本机直接内存溢出"></a>本机直接内存溢出</h2><p>直接内存的大小可以通过-XX:MaxDirectMemorySize参数来指定，如果不指定，默认与Java堆最大值(-Xmx)一致。由直接内存导致的内存溢出，一个明显的特征就是Heap Dump文件不会看见有什么明显的异常，如果发现Dump文件很小并且程序中使用了DirectByteMemory，可以考虑是直接内存溢出了。</p>
 
             </article>
             <hr>
