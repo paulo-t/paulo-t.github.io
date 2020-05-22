@@ -17,7 +17,7 @@
   <meta name="description" content="">
   <meta name="author" content="Paulo Tian">
   <meta name="keywords" content="">
-  <title>随笔 - Paulo&#39;s Blog</title>
+  <title>经典垃圾收集器 - Paulo&#39;s Blog</title>
 
   <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
 <link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
@@ -132,8 +132,8 @@
               
                 <div class="mt-3 post-meta">
                   <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-                  <time datetime="2020-05-18 22:02">
-                    May 18, 2020 pm
+                  <time datetime="2020-05-22 09:29">
+                    May 22, 2020 am
                   </time>
                 </div>
               
@@ -143,7 +143,7 @@
                   
                   <span class="post-meta mr-2">
                     <i class="iconfont icon-chart"></i>
-                    58 字
+                    2.5k 字
                   </span>
                 
 
@@ -153,7 +153,7 @@
                       <i class="iconfont icon-clock-fill"></i>
                     
                     
-                    1
+                    26
                      分钟
                   </span>
                 
@@ -182,7 +182,44 @@
           <div class="post-content mx-auto" id="post">
             
             <article class="markdown-body">
-              <p>曾经那个对生活中的一切毫不在乎的少年长大了，他正试着脱去孤傲的外衣，拥抱多彩的生活，认真对待身边的一切，成为一个温柔、阳光的人。</p>
+              <p>垃圾收集算法是内存回收的方法理论，垃圾收集器是内存回收的执行者。各款经典垃圾收集器之间的关系如下(图中虚线的关系在JDK9之后已经不再存在)，如果垃圾收集器之间存在连线，就说明他们可以搭配使用。</p>
+<p><img src="%E7%BB%8F%E5%85%B8%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8.png" srcset="/img/loading.gif" alt="alt"></p>
+<h2 id="Serial收集器"><a href="#Serial收集器" class="headerlink" title="Serial收集器"></a>Serial收集器</h2><p>最基础，最历史悠久的收集器。单线程工作，单线程工作的意义并不是说明它只会使用一个处理器或一个收集线程去完成垃圾收集工作，强调的是它在进行垃圾收集时必须暂停其它所有工作的线程(STW)，直到它收集结束。Serial垃圾收集器简单高效，对于资源受限的的环境，它是所有垃圾收集器里额外内存消耗最小的。对于单核处理器或者核心较少的处理器来说，Serial收集器由于没有线程交互的开销，专心垃圾收集自然可以获得较高的垃圾收集效率。</p>
+<h2 id="ParNew收集器"><a href="#ParNew收集器" class="headerlink" title="ParNew收集器"></a>ParNew收集器</h2><p>Serial垃圾收集器的多线程并行版本，除了同时使用多条线程进行垃圾回收之外，其余的行为包括Serial收集器可用的控制参数、收集算法、Stop The World、对象分配规则、回收策略都与Serial收集器完全一致。CMS垃圾收集器的出现巩固了ParNew收集器的地位，JDK5时，HotSpot推出了一款强交互中具有跨时代意义的收集器-CMS垃圾收集器，它首次实现了让垃圾线程和用户线程(基本上)同时工作，遗憾的是它不能与JDK1.4.0中就已经存在的垃圾收集器Parallel Scavenge配合工作，只能与Serial或者ParNew中的一个合作，ParNew是激活CMS收集器时，默认的新生代收集器。</p>
+<p>G1垃圾收集器的出现代替了CMS。G1时一个面向全堆的垃圾收集器。从JDK 9开始，ParNew和CMS组合已经不再是官方推荐的服务端模式下的收集器方式了，官方希望它被G1代替，甚至还取消了ParNew和Serial Old以及Serial和CMS的组合，这意味着ParNew只能和CMS互相搭配使用。</p>
+<h2 id="Parallel-Scavenge收集器"><a href="#Parallel-Scavenge收集器" class="headerlink" title="Parallel Scavenge收集器"></a>Parallel Scavenge收集器</h2><p>和ParNew一样基于标记-复制算法实现，也能并行收集垃圾不同点是CMS等收集器关注点是尽可能的缩短垃圾收集时用户等待的时间，而Parallel Scavenge收集器是为了达到一个可控的吞吐量(处理器用于用户代码时间和处理器消耗总时间的比值)，主要适合在后台运算不需要太多交互的分析性任务。</p>
+<p> Parallel Scavenge提供了两个参数用于精确控制吞吐量,分别是控制最大垃圾收集停顿时间的 -XX:MaxGCPauseMillis参数以及设置吞吐量的-XX:GCTimeRatio参数。</p>
+<p> -XX:MaxGCPauseMillis允许设置的值是一个大于0的毫秒数，收集器尽量保证内存回收的时间不大于用户设置的值。这个值应该设置的合理而不是尽可能小，因为垃圾收集停顿时间缩短是以牺牲新生代空间和吞吐量为代价的，系统把新生代设置的小一些，收集300M垃圾肯定比收集500M快，但是原来10s收集一次，每次需要100ms，现在5ms收集一次，每次需要70ms，吞吐量自然就下来了。</p>
+<p> -XX:GCTimeRatio的值因该是0-100之间的数，也就是垃圾收集时间占处理器总时间的比例。如果设置为19，那么允许的最大垃圾收集时间为总时间比例的1/(1+19)即5%，默认值为99。</p>
+<p>  Parallel Scavenge还有一个参数-XX:+UseAdaptiveSizePolicy。这个参数使用后不需要人工指定新生代的大小(-Xmn)、Eden区和Survivor区的比例(-XX:SurvivorRatio)、晋升老年代对象大小(-XX:PretenureSizeThreshold)等细节参数了，虚拟机会根据当前系统运行情况收集性能监控信息，动态调整这些参数以获得最合适的停顿时间以及最大的吞吐量。只需要设置最大堆(-Xmx)然后使用-XX:MaxGCPauseMillis或者-XX:GCTimeRatio参数给虚拟机指定一个优化目标。</p>
+<h2 id="Serial-Old收集器"><a href="#Serial-Old收集器" class="headerlink" title="Serial Old收集器"></a>Serial Old收集器</h2><p>  Serial Old收集器是Serial收集器的老年代版本，它也是一个单线程的垃圾收集器，使用标记-整理算法。</p>
+<h2 id="Parallel-Old收集器"><a href="#Parallel-Old收集器" class="headerlink" title="Parallel Old收集器"></a>Parallel Old收集器</h2><p>  Parallel Old是 Parallel Scavenge的老年代版本，支持多线程并发收集，基于标记-整理算法实现。这个收集器出现后，”吞吐量优先收集器“Parallel Scavenge收集器终于有了名副其实的老年代搭配使用组合。</p>
+<h2 id="CMS收集器"><a href="#CMS收集器" class="headerlink" title="CMS收集器"></a>CMS收集器</h2><p>  CMS收集器是一种以获取最短的停顿时间为目标的收集器。目前很大一部分的Java应用是基于B/S架构开发的，这类应用关注服务的响应速度。CMS很符合这类应用的需求。</p>
+<p>  CMS是基于标记-清除的算法实现的，整个过程可以划分为以下4个部分:</p>
+<ul>
+<li><p>初始标记</p>
+</li>
+<li><p>并发标记</p>
+</li>
+<li><p>重新标记</p>
+</li>
+<li><p>并发清除</p>
+<p>其中初始标记和重新标记需要Stop The World。初始标记仅仅只是标记以下和GC Roots能直接关联的对象，速度非常快；并发标记就是从GC Roots能关联到的对象开是遍历整个对象图的过程，这个过程需要的时间比较长但是可以和用户线程并发执行；重新标记为了修正并发标记期间因用户线程继续执行导致的标记产生变动的那一部分；并发清除，清理删除掉标记阶段判断已经死亡的对象，由于不需要移动存活对象，所以这个阶段可以和用户线程并发。</p>
+<p>CMS收集器缺点:</p>
+</li>
+<li><p>对处理器资源敏感。CMS默认启动回收线程数是(Cpu核心数量+3)/4,如果核心数量大于4个垃圾收集器占用不超过25%的处理器资源，但是当核心数不足四个时，CMS对用户程序的影响就很大。</p>
+</li>
+<li><p>CMS无法收集浮动垃圾，有可能出现”Concurrent Mode Failure”失败而导致另外一次”Stop The World”的Full GC产生。在CMS收集器的并发标记和并发清除阶段，用户线程还在运行，程序自然还会伴随着新的垃圾的产生，但是这部分垃圾对象出现在垃圾标记之后，只好留到下一次清理，这些垃圾称为”浮动垃圾”。由于在垃圾收集阶段用户线程还在运行，需要预留足够的空间给程序运行，在JDK 5的默认值设置下，当老年代内存使用超过了68%就会触发CMS垃圾收集器的收集，到JDK 6时被调高到了92%。如果CMS收集器运行期间没有预留够足够的内存空间给用户线程运行，就会出现一次”并发失败”，临时启用Serial Old收集器来重新回收老年代垃圾。<br>所以-XX: CMSInitiatingOccupancyFraction设置的太高容易导致大量的并发失败，星能反而会降低。</p>
+</li>
+</ul>
+<ul>
+<li><p>CMS时基于标记-清除算法实现的收集器，老年代会有大量空间碎片产生，有时不得不提前触发Full GC。为解决这个问题，CMS提供了一个-XX:+UseCMSCompactAtFullCollection开关用于在CMS不得不进行Full GC时开启内存碎片的合并整理过程，这个过程必须要移动存活对象，所以是无法和用户线程并发的，这会使用户线程停顿时间变长，CMS提供了另外一个参数-XX：CMSFullGCsBEforeCompaction，这个参数要求CMS在只想过若干次不整理空间的Full GC后，下一次Full GC前会先整理碎片空间。</p>
+<h2 id="Garbage-First"><a href="#Garbage-First" class="headerlink" title="Garbage First"></a>Garbage First</h2><p>开创了垃圾收集器面向局部收集设计思路和基于Region的内存布局形式的先河。G1是一个面向服务端应用的收集器，它的开发是为了代替CMS收集器。在G1收集器出现之前的所有收集器，垃圾收集时要么收集整个新生代，要么就是整个老年代，再者就是整个对内存。G1可以面向堆内存任何部分形成会收集。</p>
+<p>虽然G1也是基于分代理论设计的垃圾收集器但是它的堆内存布局和其它垃圾收集器有非常明显的差异:G1不再坚持固定大小、固定数量的分代区域划分，而是把Java堆划分成为多块大小相同的Region，每个Region都可以根据需要扮演Eden，Survivor或者老年代空间的角色，收集器能对扮演不同角色的空间采用不同的策略区处理。</p>
+<p>Region中还有一块特殊的Humongous区域专门用来存储大对象，G1的大多数行为都会把Humongous Region作为老年代来看待。</p>
+<p>G1收集垃圾之前可以建立可预测的停顿时间模型，因为它将Region当作单次回收的最小单位，这样可以有效的避免再整个Java堆进行全区域的回收。G1收集器区追踪每个Region区域垃圾堆积价值的大小，价值即回收得到的空间和所需要的时间，然后在后台维护一个优先级列表每次根据瀛湖所允许的收集停顿时间（-XX:MaxGCPauseMillis,默认200ms）优先回收价值高的那些Region，这也就是Garbage First名字的由来。</p>
+</li>
+</ul>
 
             </article>
             <hr>
@@ -192,7 +229,7 @@
                   <div class="post-meta mr-3">
                     <i class="iconfont icon-category"></i>
                     
-                      <a class="hover-with-bg" href="/categories/life/">life</a>
+                      <a class="hover-with-bg" href="/categories/Java/">Java</a>
                     
                   </div>
                 
@@ -200,7 +237,7 @@
                   <div class="post-meta">
                     <i class="iconfont icon-tags"></i>
                     
-                      <a class="hover-with-bg" href="/tags/%E9%9A%8F%E7%AC%94/">随笔</a>
+                      <a class="hover-with-bg" href="/tags/jvm/">jvm</a>
                     
                   </div>
                 
@@ -213,18 +250,12 @@
                   <div class="post-prev col-6">
                     
                     
-                      <a href="/2020/05/22/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E7%AE%97%E6%B3%95/">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">垃圾回收算法</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </div>
                   <div class="post-next col-6">
                     
                     
-                      <a href="/2020/05/18/%E6%9D%AD%E5%B7%9E%E7%BE%8E%E9%A3%9F/">
-                        <span class="hidden-mobile">杭州美食</span>
+                      <a href="/2020/05/22/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E7%AE%97%E6%B3%95/">
+                        <span class="hidden-mobile">垃圾回收算法</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
@@ -364,7 +395,7 @@
     var typed = new Typed('#subtitle', {
       strings: [
         '  ',
-        "随笔&nbsp;",
+        "经典垃圾收集器&nbsp;",
       ],
       cursorChar: "_",
       typeSpeed: 70,
