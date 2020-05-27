@@ -143,7 +143,7 @@
                   
                   <span class="post-meta mr-2">
                     <i class="iconfont icon-chart"></i>
-                    2.6k 字
+                    3.7k 字
                   </span>
                 
 
@@ -153,7 +153,7 @@
                       <i class="iconfont icon-clock-fill"></i>
                     
                     
-                    29
+                    48
                      分钟
                   </span>
                 
@@ -307,7 +307,197 @@
             &#125;
         &#125;);</code></pre>
 
-<h2 id="工作流程和实现机制"><a href="#工作流程和实现机制" class="headerlink" title="工作流程和实现机制"></a>工作流程和实现机制</h2><p>只是对原文章进行了一下记录和补充，原文章出处:<a href="https://mp.weixin.qq.com/s/xZTGeFaaVW4VDDVgp3jwqg" target="_blank" rel="noopener">https://mp.weixin.qq.com/s/xZTGeFaaVW4VDDVgp3jwqg</a></p>
+<h2 id="工作流程和实现机制"><a href="#工作流程和实现机制" class="headerlink" title="工作流程和实现机制"></a>工作流程和实现机制</h2><h3 id="Window-Operator工作流程"><a href="#Window-Operator工作流程" class="headerlink" title="Window Operator工作流程"></a>Window Operator工作流程</h3><pre><code class="hljs reasonml">public void process<span class="hljs-constructor">Element(StreamRecord&lt;IN&gt; <span class="hljs-params">element</span>)</span> throws Exception &#123;
+       <span class="hljs-comment">//1.获取元素的窗口</span>
+       final Collection&lt;W&gt; elementWindows = windowAssigner.assign<span class="hljs-constructor">Windows(<span class="hljs-params">element</span>.<span class="hljs-params">getValue</span>()</span>, element.get<span class="hljs-constructor">Timestamp()</span>, windowAssignerContext);
+
+       <span class="hljs-comment">//element不属于任何窗口</span>
+       boolean isSkippedElement = <span class="hljs-literal">true</span>;
+
+       <span class="hljs-comment">//2.获取element的key</span>
+       final K key = this.&lt;K&gt;get<span class="hljs-constructor">KeyedStateBackend()</span>.get<span class="hljs-constructor">CurrentKey()</span>;
+
+       for (W window : elementWindows) &#123;
+
+           <span class="hljs-comment">//3.丢弃已经late的window(window的清除时间小于当前watermark)</span>
+           <span class="hljs-keyword">if</span> (is<span class="hljs-constructor">WindowLate(<span class="hljs-params">window</span>)</span>) &#123;
+               continue;
+           &#125;
+           isSkippedElement = <span class="hljs-literal">false</span>;
+
+           windowState.set<span class="hljs-constructor">CurrentNamespace(<span class="hljs-params">window</span>)</span>;
+           <span class="hljs-comment">//4.将element放入window state</span>
+           windowState.add(element.get<span class="hljs-constructor">Value()</span>);
+
+           triggerContext.key = key;
+           triggerContext.window = window;
+
+           <span class="hljs-comment">//5.判断element是否触发trigger</span>
+           TriggerResult triggerResult = triggerContext.on<span class="hljs-constructor">Element(<span class="hljs-params">element</span>)</span>;
+
+           <span class="hljs-keyword">if</span> (triggerResult.is<span class="hljs-constructor">Fire()</span>) &#123;
+               ACC contents = windowState.get<span class="hljs-literal">()</span>;
+               <span class="hljs-keyword">if</span> (contents<span class="hljs-operator"> == </span>null) &#123;
+                   continue;
+               &#125;
+               <span class="hljs-comment">//6.获取window state，注入window function</span>
+               emit<span class="hljs-constructor">WindowContents(<span class="hljs-params">window</span>, <span class="hljs-params">contents</span>)</span>;
+           &#125;
+
+           <span class="hljs-keyword">if</span> (triggerResult.is<span class="hljs-constructor">Purge()</span>) &#123;
+               <span class="hljs-comment">//7.清除window state</span>
+               windowState.clear<span class="hljs-literal">()</span>;
+           &#125;
+           <span class="hljs-comment">//8.注册清除window的定时器，在window结束时清除</span>
+           register<span class="hljs-constructor">CleanupTimer(<span class="hljs-params">window</span>)</span>;
+       &#125;
+
+
+       <span class="hljs-comment">// side output input event if</span>
+       <span class="hljs-comment">// element not handled by any window</span>
+       <span class="hljs-comment">// late arriving tag has been set</span>
+       <span class="hljs-comment">// windowAssigner is event time and current timestamp + allowed lateness no less than element timestamp</span>
+       <span class="hljs-comment">//9.迟到的元素放入迟到的输出</span>
+       <span class="hljs-keyword">if</span> (isSkippedElement<span class="hljs-operator"> &amp;&amp; </span>is<span class="hljs-constructor">ElementLate(<span class="hljs-params">element</span>)</span>) &#123;
+           <span class="hljs-keyword">if</span> (lateDataOutputTag != null) &#123;
+               side<span class="hljs-constructor">Output(<span class="hljs-params">element</span>)</span>;
+           &#125; <span class="hljs-keyword">else</span> &#123;
+               this.numLateRecordsDropped.inc<span class="hljs-literal">()</span>;
+           &#125;
+       &#125;
+   &#125;</code></pre>
+<h3 id="Window-State"><a href="#Window-State" class="headerlink" title="Window State"></a>Window State</h3><p>前面提到的增量聚合计算和全量聚合计算，这两个场景所应用的 State 是不一样的。</p>
+<p>如果是全量聚合，元素会添加到 ListState 当中，当触发窗口计算时，再把 ListState 中所有元素传递给窗口函数。</p>
+<pre><code class="hljs arduino"><span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">add</span><span class="hljs-params">(V value)</span> </span>&#123;
+		Preconditions.checkNotNull(value, <span class="hljs-string">"You cannot add null to a ListState."</span>);
+
+		<span class="hljs-keyword">final</span> N <span class="hljs-keyword">namespace</span> = currentNamespace;
+
+		<span class="hljs-keyword">final</span> StateTable&lt;K, N, List&lt;V&gt;&gt; <span class="hljs-built_in">map</span> = stateTable;
+		List&lt;V&gt; <span class="hljs-built_in">list</span> = <span class="hljs-built_in">map</span>.<span class="hljs-built_in">get</span>(<span class="hljs-keyword">namespace</span>);
+
+		<span class="hljs-keyword">if</span> (<span class="hljs-built_in">list</span> == null) &#123;
+			<span class="hljs-built_in">list</span> = <span class="hljs-keyword">new</span> ArrayList&lt;&gt;();
+			<span class="hljs-built_in">map</span>.<span class="hljs-built_in">put</span>(<span class="hljs-keyword">namespace</span>, <span class="hljs-built_in">list</span>);
+		&#125;
+		<span class="hljs-built_in">list</span>.add(value);
+	&#125;</code></pre>
+
+<p>如果是增量计算，使用的是 AggregatingState，每条元素进来会触发 AggregateTransformation 的计算。</p>
+<pre><code class="hljs php">@Override
+	<span class="hljs-keyword">public</span> void add(IN value) throws IOException &#123;
+		<span class="hljs-keyword">final</span> N <span class="hljs-keyword">namespace</span> = <span class="hljs-title">currentNamespace</span>;
+
+		<span class="hljs-keyword">if</span> (value == <span class="hljs-keyword">null</span>) &#123;
+			clear();
+			<span class="hljs-keyword">return</span>;
+		&#125;
+
+		<span class="hljs-keyword">try</span> &#123;
+			stateTable.transform(<span class="hljs-keyword">namespace</span>, <span class="hljs-title">value</span>, <span class="hljs-title">aggregateTransformation</span>);
+		&#125; <span class="hljs-keyword">catch</span> (<span class="hljs-keyword">Exception</span> e) &#123;
+			<span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> IOException(<span class="hljs-string">"Exception while applying AggregateFunction in aggregating state"</span>, e);
+		&#125;
+	&#125;</code></pre>
+
+<p>看下 AggregateTransformation 的实现，它会调用我们定义的 AgregateFunction 中的 createAccumulator 方法和 add 方法并将 add 的结果返回，所以 State 中存储的就是 accumulator 的值，所以比较轻量级。</p>
+<pre><code class="hljs angelscript">static <span class="hljs-keyword">final</span> <span class="hljs-keyword">class</span> <span class="hljs-symbol">AggregateTransformation</span>&lt;<span class="hljs-symbol">IN, <span class="hljs-symbol">ACC</span>, <span class="hljs-symbol">OUT</span></span>&gt; <span class="hljs-symbol">implements</span> <span class="hljs-symbol">StateTransformationFunction</span>&lt;<span class="hljs-symbol">ACC, <span class="hljs-symbol">IN</span></span>&gt; &#123;
+
+		<span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> AggregateFunction&lt;IN, ACC, OUT&gt; aggFunction;
+
+		AggregateTransformation(AggregateFunction&lt;IN, ACC, OUT&gt; aggFunction) &#123;
+			<span class="hljs-keyword">this</span>.aggFunction = Preconditions.checkNotNull(aggFunction);
+		&#125;
+
+		@Override
+		<span class="hljs-keyword">public</span> ACC apply(ACC accumulator, IN value) &#123;
+			<span class="hljs-keyword">if</span> (accumulator == <span class="hljs-literal">null</span>) &#123;
+				accumulator = aggFunction.createAccumulator();
+			&#125;
+			<span class="hljs-keyword">return</span> aggFunction.add(value, accumulator);
+		&#125;
+	&#125;</code></pre>
+
+<h3 id="Window-Function-1"><a href="#Window-Function-1" class="headerlink" title="Window Function"></a>Window Function</h3><p>在触发窗口计算时会将窗口中的状态传递给 emitWindowContents 方法。这里会调用我们定义的窗口函数中的 process 方法，将当前的 Key、Window、上下文 Context、窗口的内容作为参数传给它。在此之前和之后会分别调用 evictBefore 和evictAfter 方法把一些元素过滤掉。最终会调用 windowState 的 clear 方法，再把过滤之后的记录存到 windowState 中去。从而达到 evictor 过滤元素的效果。</p>
+<pre><code class="hljs reasonml"><span class="hljs-keyword">private</span> void emit<span class="hljs-constructor">WindowContents(W <span class="hljs-params">window</span>, Iterable&lt;StreamRecord&lt;IN&gt;&gt; <span class="hljs-params">contents</span>, ListState&lt;StreamRecord&lt;IN&gt;&gt; <span class="hljs-params">windowState</span>)</span> throws Exception &#123;
+	timestampedCollector.set<span class="hljs-constructor">AbsoluteTimestamp(<span class="hljs-params">window</span>.<span class="hljs-params">maxTimestamp</span>()</span>);
+
+	<span class="hljs-comment">// Work around type system restrictions...</span>
+	FluentIterable&lt;TimestampedValue&lt;IN&gt;&gt; recordsWithTimestamp = FluentIterable
+		.from(contents)
+		.transform(<span class="hljs-keyword">new</span> Function&lt;StreamRecord&lt;IN&gt;, TimestampedValue&lt;IN&gt;&gt;<span class="hljs-literal">()</span> &#123;
+			@Override
+			public TimestampedValue&lt;IN&gt; apply(StreamRecord&lt;IN&gt; input) &#123;
+				return <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">TimestampedValue</span>.</span></span>from(input);
+			&#125;
+		&#125;);
+	evictorContext.evict<span class="hljs-constructor">Before(<span class="hljs-params">recordsWithTimestamp</span>, Iterables.<span class="hljs-params">size</span>(<span class="hljs-params">recordsWithTimestamp</span>)</span>);
+
+	FluentIterable&lt;IN&gt; projectedContents = recordsWithTimestamp
+		.transform(<span class="hljs-keyword">new</span> Function&lt;TimestampedValue&lt;IN&gt;, IN&gt;<span class="hljs-literal">()</span> &#123;
+			@Override
+			public IN apply(TimestampedValue&lt;IN&gt; input) &#123;
+				return input.get<span class="hljs-constructor">Value()</span>;
+			&#125;
+		&#125;);
+
+	processContext.window = triggerContext.window;
+	userFunction.process(triggerContext.key, triggerContext.window, processContext, projectedContents, timestampedCollector);
+	evictorContext.evict<span class="hljs-constructor">After(<span class="hljs-params">recordsWithTimestamp</span>, Iterables.<span class="hljs-params">size</span>(<span class="hljs-params">recordsWithTimestamp</span>)</span>);
+
+	<span class="hljs-comment">//work around to fix FLINK-4369, remove the evicted elements from the windowState.</span>
+	<span class="hljs-comment">//this is inefficient, but there is no other way to remove elements from ListState, which is an AppendingState.</span>
+	windowState.clear<span class="hljs-literal">()</span>;
+	for (TimestampedValue&lt;IN&gt; record : recordsWithTimestamp) &#123;
+		windowState.add(record.get<span class="hljs-constructor">StreamRecord()</span>);
+	&#125;
+&#125;</code></pre>
+
+<h3 id="Window-Trigger-1"><a href="#Window-Trigger-1" class="headerlink" title="Window Trigger"></a>Window Trigger</h3><p>最后看下 Trigger 的实现原理。当我们有大量的 Key，同时每个 Key 又属于多个窗口时，我们如何有效的触发窗口的计算呢？</p>
+<p>Flink 利用定时器来保证窗口的触发，通过优先级队列来存储定时器。队列头的定时器表示离当前时间最近的一个，如果当前定时器比队列头的定时器时间还要早，则取消掉队列头的定时器，把当前的时间注册进去</p>
+<pre><code class="hljs reasonml">@Override
+	public TriggerResult on<span class="hljs-constructor">Element(Object <span class="hljs-params">element</span>, <span class="hljs-params">long</span> <span class="hljs-params">timestamp</span>, TimeWindow <span class="hljs-params">window</span>, TriggerContext <span class="hljs-params">ctx</span>)</span> throws Exception &#123;
+		<span class="hljs-keyword">if</span> (window.max<span class="hljs-constructor">Timestamp()</span> &lt;= ctx.get<span class="hljs-constructor">CurrentWatermark()</span>) &#123;
+			<span class="hljs-comment">// if the watermark is already past the window fire immediately</span>
+			return TriggerResult.FIRE;
+		&#125; <span class="hljs-keyword">else</span> &#123;
+			ctx.register<span class="hljs-constructor">EventTimeTimer(<span class="hljs-params">window</span>.<span class="hljs-params">maxTimestamp</span>()</span>);
+			return TriggerResult.CONTINUE;
+		&#125;
+	&#125;</code></pre>
+<pre><code class="hljs cpp">@Override
+<span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">registerEventTimeTimer</span><span class="hljs-params">(N <span class="hljs-keyword">namespace</span>, <span class="hljs-keyword">long</span> time)</span> </span>&#123;
+	eventTimeTimersQueue.add(<span class="hljs-keyword">new</span> TimerHeapInternalTimer&lt;&gt;(time, (K) keyContext.getCurrentKey(), <span class="hljs-keyword">namespace</span>));
+&#125;</code></pre>
+
+<pre><code class="hljs reasonml">
+public void on<span class="hljs-constructor">EventTime(InternalTimer&lt;K, W&gt; <span class="hljs-params">timer</span>)</span> throws Exception &#123;
+    triggerContext.key = timer.get<span class="hljs-constructor">Key()</span>;
+    triggerContext.window = timer.get<span class="hljs-constructor">Namespace()</span>;
+    evictorContext.key = timer.get<span class="hljs-constructor">Key()</span>;
+    evictorContext.window = timer.get<span class="hljs-constructor">Namespace()</span>;
+
+    TriggerResult triggerResult = triggerContext.on<span class="hljs-constructor">EventTime(<span class="hljs-params">timer</span>.<span class="hljs-params">getTimestamp</span>()</span>);
+
+    <span class="hljs-keyword">if</span> (triggerResult.is<span class="hljs-constructor">Fire()</span>) &#123;
+        Iterable&lt;StreamRecord&lt;IN&gt;&gt; contents = evictingWindowState.get<span class="hljs-literal">()</span>;
+        <span class="hljs-keyword">if</span> (contents != null) &#123;
+            emit<span class="hljs-constructor">WindowContents(<span class="hljs-params">triggerContext</span>.<span class="hljs-params">window</span>, <span class="hljs-params">contents</span>, <span class="hljs-params">evictingWindowState</span>)</span>;
+        &#125;
+    &#125;
+
+    <span class="hljs-keyword">if</span> (triggerResult.is<span class="hljs-constructor">Purge()</span>) &#123;
+        evictingWindowState.clear<span class="hljs-literal">()</span>;
+    &#125;
+
+    <span class="hljs-keyword">if</span> (windowAssigner.is<span class="hljs-constructor">EventTime()</span><span class="hljs-operator"> &amp;&amp; </span>is<span class="hljs-constructor">CleanupTime(<span class="hljs-params">triggerContext</span>.<span class="hljs-params">window</span>, <span class="hljs-params">timer</span>.<span class="hljs-params">getTimestamp</span>()</span>)) &#123;
+        clear<span class="hljs-constructor">AllState(<span class="hljs-params">triggerContext</span>.<span class="hljs-params">window</span>, <span class="hljs-params">evictingWindowState</span>, <span class="hljs-params">mergingWindows</span>)</span>;
+    &#125;
+&#125;</code></pre>
+
+
+
+<p>只是对原文章进行了一下记录和补充，原文章出处:<a href="https://mp.weixin.qq.com/s/xZTGeFaaVW4VDDVgp3jwqg" target="_blank" rel="noopener">https://mp.weixin.qq.com/s/xZTGeFaaVW4VDDVgp3jwqg</a></p>
 
             </article>
             <hr>
