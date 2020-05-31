@@ -4,6 +4,25 @@
   
   
   <entry>
+    <title>线性表结构的增删查</title>
+    <link href="/2020/05/31/%E7%BA%BF%E6%80%A7%E8%A1%A8%E7%BB%93%E6%9E%84%E7%9A%84%E5%A2%9E%E5%88%A0%E6%9F%A5/"/>
+    <url>/2020/05/31/%E7%BA%BF%E6%80%A7%E8%A1%A8%E7%BB%93%E6%9E%84%E7%9A%84%E5%A2%9E%E5%88%A0%E6%9F%A5/</url>
+    
+    <content type="html"><![CDATA[<p>/**</p><ul><li><p>单向链表</p></li><li><p>/<br>public class SingleLinkedList<T> {<br>  //头结点<br>  private Node<T> head = new Node<T>(null);</p><p>  /**</p><ul><li><p>获取头结点</p></li><li><p>/<br>public Node<T> getHead() {<br>  return head;<br>}</p><p>/**</p></li><li><p>在链表最后添加节点</p></li><li><p>/<br>public void add(Node<T> node) {<br>  Node<T> aux = head;<br>  while (!Objects.isNull(aux.getNext())) {</p><pre><code>aux = aux.getNext();</code></pre><p>  }</p><p>  aux.setNext(node);<br>}</p><p>/**</p></li><li><p>删除节点</p></li><li><p>/<br>public void delete(T data) {<br>  Node<T> aux = head;</p><p>  boolean isFind = false;</p><p>  while (true) {</p><pre><code>if (Objects.isNull(head.getNext())) {    break;}if (aux.getNext().getData().equals(data)) {    isFind = true;    break;}aux = aux.getNext();</code></pre><p>  }</p><p>  if (isFind) {</p><pre><code>aux.setNext(aux.getNext().getNext());</code></pre><p>  } else {</p><pre><code>System.out.println(&quot;删除的节点不存在&quot;);</code></pre><p>  }<br>}</p></li></ul></li></ul><pre><code>/** * 遍历链表 */public void list() {    Node&lt;T&gt; aux = head;    if (Objects.isNull(aux.getNext())) {        System.out.println(&quot;linked list is null.&quot;);    }    while (!Objects.isNull(aux.getNext())) {        aux = aux.getNext();        System.out.println(JSON.toJSONString(aux));    }}/** * 逆序链表 */public void reverse() {    //指向前一个元素的指针    Node&lt;T&gt; pre = null;    //指向当前元素的指针    Node&lt;T&gt; current = head.getNext();    if (Objects.isNull(current.getNext())) {        return;    }    while (!Objects.isNull(current)) {        //指向下一个元素的指针        Node&lt;T&gt; next = current.getNext();        current.setNext(pre);        pre = current;        current = next;    }    head.setNext(pre);}/** * 查找链表中间元素的值 */public T findMid(){    Node&lt;T&gt; aux = head;    if(Objects.isNull(aux.getNext())){        System.out.println(&quot;链表为空&quot;);    }    if(Objects.isNull(aux.getNext().getNext())){        return aux.getNext().getData();    }    Node&lt;T&gt; next = aux.getNext();    Node&lt;T&gt; twoNext = aux.getNext();    while(!Objects.isNull(twoNext.getNext()) &amp;&amp; !Objects.isNull(twoNext.getNext().getNext())){        next = next.getNext();        twoNext = twoNext.getNext().getNext();    }    return next.getData();}/** * 判断是否是循环链表 */public boolean isColumn(){    Node&lt;T&gt; aux = head;    if(Objects.isNull(aux.getNext())){        System.out.println(&quot;链表为空&quot;);    }    if(Objects.isNull(aux.getNext().getNext())){        return false;    }    Node&lt;T&gt; next = aux.getNext();    Node&lt;T&gt; twoNext = aux.getNext();    while(!Objects.isNull(twoNext.getNext()) &amp;&amp; !Objects.isNull(twoNext.getNext().getNext())){        next = next.getNext();        twoNext = twoNext.getNext().getNext();        if(twoNext.getData().equals(next.getData())){            return true;        }    }    return false;}</code></pre><p>}</p>]]></content>
+    
+    
+    
+    <tags>
+      
+      <tag>linkedList</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>归并排序算法</title>
     <link href="/2020/05/31/%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95/"/>
     <url>/2020/05/31/%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95/</url>
