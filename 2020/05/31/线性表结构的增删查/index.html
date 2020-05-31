@@ -143,7 +143,7 @@
                   
                   <span class="post-meta mr-2">
                     <i class="iconfont icon-chart"></i>
-                    389 字
+                    452 字
                   </span>
                 
 
@@ -153,7 +153,7 @@
                       <i class="iconfont icon-clock-fill"></i>
                     
                     
-                    6
+                    8
                      分钟
                   </span>
                 
@@ -182,146 +182,167 @@
           <div class="post-content mx-auto" id="post">
             
             <article class="markdown-body">
-              <p>/**</p>
-<ul>
-<li><p>单向链表</p>
-</li>
-<li><p>/<br>public class SingleLinkedList<T> {<br>  //头结点<br>  private Node<T> head = new Node<T>(null);</p>
-<p>  /**</p>
-<ul>
-<li><p>获取头结点</p>
-</li>
-<li><p>/<br>public Node<T> getHead() {<br>  return head;<br>}</p>
-<p>/**</p>
-</li>
-<li><p>在链表最后添加节点</p>
-</li>
-<li><p>/<br>public void add(Node<T> node) {<br>  Node<T> aux = head;<br>  while (!Objects.isNull(aux.getNext())) {</p>
-<pre><code>aux = aux.getNext();</code></pre><p>  }</p>
-<p>  aux.setNext(node);<br>}</p>
-<p>/**</p>
-</li>
-<li><p>删除节点</p>
-</li>
-<li><p>/<br>public void delete(T data) {<br>  Node<T> aux = head;</p>
-<p>  boolean isFind = false;</p>
-<p>  while (true) {</p>
-<pre><code>if (Objects.isNull(head.getNext())) {
-    break;
-}
-if (aux.getNext().getData().equals(data)) {
-    isFind = true;
-    break;
-}
-aux = aux.getNext();</code></pre><p>  }</p>
-<p>  if (isFind) {</p>
-<pre><code>aux.setNext(aux.getNext().getNext());</code></pre><p>  } else {</p>
-<pre><code>System.out.println(&quot;删除的节点不存在&quot;);</code></pre><p>  }<br>}</p>
-</li>
-</ul>
-</li>
-</ul>
-<pre><code>/**
- * 遍历链表
- */
-public void list() {
-    Node&lt;T&gt; aux = head;
-    if (Objects.isNull(aux.getNext())) {
-        System.out.println(&quot;linked list is null.&quot;);
-    }
+              <pre><code class="hljs reasonml"><span class="hljs-comment">/**</span>
+<span class="hljs-comment"> * 单向链表</span>
+<span class="hljs-comment"> */</span>
+public <span class="hljs-keyword">class</span> SingleLinkedList&lt;T&gt; &#123;
+    <span class="hljs-comment">//头结点</span>
+    <span class="hljs-keyword">private</span> Node&lt;T&gt; head = <span class="hljs-keyword">new</span> Node&lt;T&gt;(null);
 
-    while (!Objects.isNull(aux.getNext())) {
-        aux = aux.getNext();
-        System.out.println(JSON.toJSONString(aux));
-    }
-}
+    <span class="hljs-comment">/**</span>
+<span class="hljs-comment">     * 获取头结点</span>
+<span class="hljs-comment">     */</span>
+    public Node&lt;T&gt; get<span class="hljs-constructor">Head()</span> &#123;
+        return head;
+    &#125;
 
-/**
- * 逆序链表
- */
-public void reverse() {
-    //指向前一个元素的指针
-    Node&lt;T&gt; pre = null;
-    //指向当前元素的指针
-    Node&lt;T&gt; current = head.getNext();
+    <span class="hljs-comment">/**</span>
+<span class="hljs-comment">     * 在链表最后添加节点</span>
+<span class="hljs-comment">     */</span>
+    public void add(Node&lt;T&gt; node) &#123;
+        Node&lt;T&gt; aux = head;
+        <span class="hljs-keyword">while</span> (!<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">Objects</span>.</span></span>is<span class="hljs-constructor">Null(<span class="hljs-params">aux</span>.<span class="hljs-params">getNext</span>()</span>)) &#123;
+            aux = aux.get<span class="hljs-constructor">Next()</span>;
+        &#125;
 
-    if (Objects.isNull(current.getNext())) {
-        return;
-    }
+        aux.set<span class="hljs-constructor">Next(<span class="hljs-params">node</span>)</span>;
+    &#125;
 
-    while (!Objects.isNull(current)) {
-        //指向下一个元素的指针
-        Node&lt;T&gt; next = current.getNext();
-        current.setNext(pre);
-        pre = current;
-        current = next;
-    }
+    <span class="hljs-comment">/**</span>
+<span class="hljs-comment">     * 删除节点</span>
+<span class="hljs-comment">     */</span>
+    public void delete(T data) &#123;
+        Node&lt;T&gt; aux = head;
 
-    head.setNext(pre);
-}
+        boolean isFind = <span class="hljs-literal">false</span>;
 
-/**
- * 查找链表中间元素的值
- */
+        <span class="hljs-keyword">while</span> (<span class="hljs-literal">true</span>) &#123;
+            <span class="hljs-keyword">if</span> (<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">Objects</span>.</span></span>is<span class="hljs-constructor">Null(<span class="hljs-params">head</span>.<span class="hljs-params">getNext</span>()</span>)) &#123;
+                break;
+            &#125;
+            <span class="hljs-keyword">if</span> (aux.get<span class="hljs-constructor">Next()</span>.get<span class="hljs-constructor">Data()</span>.equals(data)) &#123;
+                isFind = <span class="hljs-literal">true</span>;
+                break;
+            &#125;
+            aux = aux.get<span class="hljs-constructor">Next()</span>;
+        &#125;
 
-public T findMid(){
-    Node&lt;T&gt; aux = head;
+        <span class="hljs-keyword">if</span> (isFind) &#123;
+            aux.set<span class="hljs-constructor">Next(<span class="hljs-params">aux</span>.<span class="hljs-params">getNext</span>()</span>.get<span class="hljs-constructor">Next()</span>);
+        &#125; <span class="hljs-keyword">else</span> &#123;
+            <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">System</span>.</span></span>out.println(<span class="hljs-string">"删除的节点不存在"</span>);
+        &#125;
+    &#125;
 
 
-    if(Objects.isNull(aux.getNext())){
-        System.out.println(&quot;链表为空&quot;);
-    }
+    <span class="hljs-comment">/**</span>
+<span class="hljs-comment">     * 遍历链表</span>
+<span class="hljs-comment">     */</span>
+    public void <span class="hljs-built_in">list</span><span class="hljs-literal">()</span> &#123;
+        Node&lt;T&gt; aux = head;
+        <span class="hljs-keyword">if</span> (<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">Objects</span>.</span></span>is<span class="hljs-constructor">Null(<span class="hljs-params">aux</span>.<span class="hljs-params">getNext</span>()</span>)) &#123;
+            <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">System</span>.</span></span>out.println(<span class="hljs-string">"linked list is null."</span>);
+        &#125;
 
-    if(Objects.isNull(aux.getNext().getNext())){
-        return aux.getNext().getData();
-    }
+        <span class="hljs-keyword">while</span> (!<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">Objects</span>.</span></span>is<span class="hljs-constructor">Null(<span class="hljs-params">aux</span>.<span class="hljs-params">getNext</span>()</span>)) &#123;
+            aux = aux.get<span class="hljs-constructor">Next()</span>;
+            <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">System</span>.</span></span>out.println(<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">JSON</span>.</span></span><span class="hljs-keyword">to</span><span class="hljs-constructor">JSONString(<span class="hljs-params">aux</span>)</span>);
+        &#125;
+    &#125;
 
-    Node&lt;T&gt; next = aux.getNext();
-    Node&lt;T&gt; twoNext = aux.getNext();
+    <span class="hljs-comment">/**</span>
+<span class="hljs-comment">     * 逆序链表</span>
+<span class="hljs-comment">     */</span>
+    public void reverse<span class="hljs-literal">()</span> &#123;
+        <span class="hljs-comment">//指向前一个元素的指针</span>
+        Node&lt;T&gt; pre = null;
+        <span class="hljs-comment">//指向当前元素的指针</span>
+        Node&lt;T&gt; current = head.get<span class="hljs-constructor">Next()</span>;
 
-    while(!Objects.isNull(twoNext.getNext()) &amp;&amp; !Objects.isNull(twoNext.getNext().getNext())){
-        next = next.getNext();
-        twoNext = twoNext.getNext().getNext();
-    }
+        <span class="hljs-keyword">if</span> (<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">Objects</span>.</span></span>is<span class="hljs-constructor">Null(<span class="hljs-params">current</span>.<span class="hljs-params">getNext</span>()</span>)) &#123;
+            return;
+        &#125;
 
-    return next.getData();
-}
+        <span class="hljs-keyword">while</span> (!<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">Objects</span>.</span></span>is<span class="hljs-constructor">Null(<span class="hljs-params">current</span>)</span>) &#123;
+            <span class="hljs-comment">//指向下一个元素的指针</span>
+            Node&lt;T&gt; next = current.get<span class="hljs-constructor">Next()</span>;
+            current.set<span class="hljs-constructor">Next(<span class="hljs-params">pre</span>)</span>;
+            pre = current;
+            current = next;
+        &#125;
 
-/**
- * 判断是否是循环链表
- */
+        head.set<span class="hljs-constructor">Next(<span class="hljs-params">pre</span>)</span>;
+    &#125;
 
-public boolean isColumn(){
-    Node&lt;T&gt; aux = head;
+    <span class="hljs-comment">/**</span>
+<span class="hljs-comment">     * 查找链表中间元素的值</span>
+<span class="hljs-comment">     */</span>
+
+    public T find<span class="hljs-constructor">Mid()</span>&#123;
+        Node&lt;T&gt; aux = head;
 
 
-    if(Objects.isNull(aux.getNext())){
-        System.out.println(&quot;链表为空&quot;);
-    }
+        <span class="hljs-keyword">if</span>(<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">Objects</span>.</span></span>is<span class="hljs-constructor">Null(<span class="hljs-params">aux</span>.<span class="hljs-params">getNext</span>()</span>))&#123;
+            <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">System</span>.</span></span>out.println(<span class="hljs-string">"链表为空"</span>);
+        &#125;
 
-    if(Objects.isNull(aux.getNext().getNext())){
-        return false;
-    }
+        <span class="hljs-keyword">if</span>(<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">Objects</span>.</span></span>is<span class="hljs-constructor">Null(<span class="hljs-params">aux</span>.<span class="hljs-params">getNext</span>()</span>.get<span class="hljs-constructor">Next()</span>))&#123;
+            return aux.get<span class="hljs-constructor">Next()</span>.get<span class="hljs-constructor">Data()</span>;
+        &#125;
 
-    Node&lt;T&gt; next = aux.getNext();
-    Node&lt;T&gt; twoNext = aux.getNext();
+        Node&lt;T&gt; next = aux.get<span class="hljs-constructor">Next()</span>;
+        Node&lt;T&gt; twoNext = aux.get<span class="hljs-constructor">Next()</span>;
 
-    while(!Objects.isNull(twoNext.getNext()) &amp;&amp; !Objects.isNull(twoNext.getNext().getNext())){
-        next = next.getNext();
-        twoNext = twoNext.getNext().getNext();
+        <span class="hljs-keyword">while</span>(!<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">Objects</span>.</span></span>is<span class="hljs-constructor">Null(<span class="hljs-params">twoNext</span>.<span class="hljs-params">getNext</span>()</span>)<span class="hljs-operator"> &amp;&amp; </span>!<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">Objects</span>.</span></span>is<span class="hljs-constructor">Null(<span class="hljs-params">twoNext</span>.<span class="hljs-params">getNext</span>()</span>.get<span class="hljs-constructor">Next()</span>))&#123;
+            next = next.get<span class="hljs-constructor">Next()</span>;
+            twoNext = twoNext.get<span class="hljs-constructor">Next()</span>.get<span class="hljs-constructor">Next()</span>;
+        &#125;
 
-        if(twoNext.getData().equals(next.getData())){
-            return true;
-        }
-    }
+        return next.get<span class="hljs-constructor">Data()</span>;
+    &#125;
 
-    return false;
-}</code></pre><p>}</p>
+    <span class="hljs-comment">/**</span>
+<span class="hljs-comment">     * 判断是否是循环链表</span>
+<span class="hljs-comment">     */</span>
 
+    public boolean is<span class="hljs-constructor">Column()</span>&#123;
+        Node&lt;T&gt; aux = head;
+
+
+        <span class="hljs-keyword">if</span>(<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">Objects</span>.</span></span>is<span class="hljs-constructor">Null(<span class="hljs-params">aux</span>.<span class="hljs-params">getNext</span>()</span>))&#123;
+            <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">System</span>.</span></span>out.println(<span class="hljs-string">"链表为空"</span>);
+        &#125;
+
+        <span class="hljs-keyword">if</span>(<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">Objects</span>.</span></span>is<span class="hljs-constructor">Null(<span class="hljs-params">aux</span>.<span class="hljs-params">getNext</span>()</span>.get<span class="hljs-constructor">Next()</span>))&#123;
+            return <span class="hljs-literal">false</span>;
+        &#125;
+
+        Node&lt;T&gt; next = aux.get<span class="hljs-constructor">Next()</span>;
+        Node&lt;T&gt; twoNext = aux.get<span class="hljs-constructor">Next()</span>;
+
+        <span class="hljs-keyword">while</span>(!<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">Objects</span>.</span></span>is<span class="hljs-constructor">Null(<span class="hljs-params">twoNext</span>.<span class="hljs-params">getNext</span>()</span>)<span class="hljs-operator"> &amp;&amp; </span>!<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">Objects</span>.</span></span>is<span class="hljs-constructor">Null(<span class="hljs-params">twoNext</span>.<span class="hljs-params">getNext</span>()</span>.get<span class="hljs-constructor">Next()</span>))&#123;
+            next = next.get<span class="hljs-constructor">Next()</span>;
+            twoNext = twoNext.get<span class="hljs-constructor">Next()</span>.get<span class="hljs-constructor">Next()</span>;
+
+            <span class="hljs-keyword">if</span>(twoNext.get<span class="hljs-constructor">Data()</span>.equals(next.get<span class="hljs-constructor">Data()</span>))&#123;
+                return <span class="hljs-literal">true</span>;
+            &#125;
+        &#125;
+
+        return <span class="hljs-literal">false</span>;
+    &#125;
+&#125;</code></pre>
             </article>
             <hr>
             <div>
               <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/Data-Structure/">Data Structure</a>
+                    
+                  </div>
                 
                 
                   <div class="post-meta">
