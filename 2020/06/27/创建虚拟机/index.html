@@ -17,7 +17,7 @@
   <meta name="description" content="">
   <meta name="author" content="Paulo Tian">
   <meta name="keywords" content="">
-  <title>三路快速排序算法 - Paulo&#39;s Blog</title>
+  <title>创建虚拟机 - Paulo&#39;s Blog</title>
 
   <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
 <link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
@@ -132,8 +132,8 @@
               
                 <div class="mt-3 post-meta">
                   <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-                  <time datetime="2020-06-18 22:39">
-                    June 18, 2020 pm
+                  <time datetime="2020-06-27 21:33">
+                    June 27, 2020 pm
                   </time>
                 </div>
               
@@ -143,7 +143,7 @@
                   
                   <span class="post-meta mr-2">
                     <i class="iconfont icon-chart"></i>
-                    211 字
+                    221 字
                   </span>
                 
 
@@ -153,7 +153,7 @@
                       <i class="iconfont icon-clock-fill"></i>
                     
                     
-                    4
+                    2
                      分钟
                   </span>
                 
@@ -182,59 +182,44 @@
           <div class="post-content mx-auto" id="post">
             
             <article class="markdown-body">
-              <pre><code class="hljs reasonml">package com.paulo.algorithm;
+              <h2 id="1-自定义虚拟机设置"><a href="#1-自定义虚拟机设置" class="headerlink" title="1.自定义虚拟机设置"></a>1.自定义虚拟机设置</h2><p><img src="%E8%87%AA%E5%AE%9A%E4%B9%89.png" srcset="/img/loading.gif" alt="alt"></p>
+<h2 id="2-虚拟机硬件兼容性"><a href="#2-虚拟机硬件兼容性" class="headerlink" title="2.虚拟机硬件兼容性"></a>2.虚拟机硬件兼容性</h2><p><img src="workStation15.png" srcset="/img/loading.gif" alt="alt"></p>
+<h2 id="3-操作系统选择"><a href="#3-操作系统选择" class="headerlink" title="3.操作系统选择"></a>3.操作系统选择</h2><p><img src="%E7%A8%8D%E5%90%8E%E5%AE%89%E8%A3%85%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F.png" srcset="/img/loading.gif" alt="alt"></p>
+<h2 id="4-CentOS"><a href="#4-CentOS" class="headerlink" title="4.CentOS"></a>4.CentOS</h2><p><img src="cnetOS7.png" srcset="/img/loading.gif" alt="alt"></p>
+<h2 id="5-虚拟机位置"><a href="#5-虚拟机位置" class="headerlink" title="5.虚拟机位置"></a>5.虚拟机位置</h2><p><img src="%E8%99%9A%E6%8B%9F%E6%9C%BA%E4%BD%8D%E7%BD%AE.png" srcset="/img/loading.gif" alt="alt"></p>
+<h2 id="6-处理器配置"><a href="#6-处理器配置" class="headerlink" title="6.处理器配置"></a>6.处理器配置</h2><p><img src="%E5%A4%84%E7%90%86%E5%99%A8%E9%85%8D%E7%BD%AE.png" srcset="/img/loading.gif" alt="alt"></p>
+<h2 id="7-内存配置"><a href="#7-内存配置" class="headerlink" title="7.内存配置"></a>7.内存配置</h2><p><img src="%E5%86%85%E5%AD%98%E9%85%8D%E7%BD%AE.png" srcset="/img/loading.gif" alt="alt"></p>
+<h2 id="8-网络类型-png"><a href="#8-网络类型-png" class="headerlink" title="8.网络类型.png"></a>8.网络类型.png</h2><p><img src="%E7%BD%91%E7%BB%9C%E7%B1%BB%E5%9E%8B.png" srcset="/img/loading.gif" alt="alt"></p>
+<h2 id="9-IO控制器类型"><a href="#9-IO控制器类型" class="headerlink" title="9.IO控制器类型"></a>9.IO控制器类型</h2><p><img src="io.png" srcset="/img/loading.gif" alt="alt"></p>
+<h2 id="10-磁盘类型-png"><a href="#10-磁盘类型-png" class="headerlink" title="10.磁盘类型.png"></a>10.磁盘类型.png</h2><p><img src="%E7%A3%81%E7%9B%98%E7%B1%BB%E5%9E%8B.png" srcset="/img/loading.gif" alt="alt"></p>
+<h2 id="11-磁盘使用-png"><a href="#11-磁盘使用-png" class="headerlink" title="11.磁盘使用.png"></a>11.磁盘使用.png</h2><p><img src="%E7%A3%81%E7%9B%98%E4%BD%BF%E7%94%A8.png" srcset="/img/loading.gif" alt="alt"></p>
+<h2 id="12-磁盘大小"><a href="#12-磁盘大小" class="headerlink" title="12.磁盘大小"></a>12.磁盘大小</h2><p><img src="%E7%A3%81%E7%9B%98%E5%A4%A7%E5%B0%8F.png" srcset="/img/loading.gif" alt="alt"></p>
+<h2 id="13-磁盘文件"><a href="#13-磁盘文件" class="headerlink" title="13.磁盘文件"></a>13.磁盘文件</h2><p><img src="%E7%A3%81%E7%9B%98%E6%96%87%E4%BB%B6.png" srcset="/img/loading.gif" alt="alt"></p>
+<h2 id="14-自定义硬件"><a href="#14-自定义硬件" class="headerlink" title="14.自定义硬件"></a>14.自定义硬件</h2><h3 id="移除打印机"><a href="#移除打印机" class="headerlink" title="移除打印机"></a>移除打印机</h3><p><img src="%E7%A7%BB%E9%99%A4%E6%89%93%E5%8D%B0%E6%9C%BA.png" srcset="/img/loading.gif" alt="alt"></p>
+<h3 id="开启处理器虚拟化"><a href="#开启处理器虚拟化" class="headerlink" title="开启处理器虚拟化"></a>开启处理器虚拟化</h3><p><img src="%E5%A4%84%E7%90%86%E5%99%A8%E8%99%9A%E6%8B%9F%E5%8C%96.png" srcset="/img/loading.gif" alt="alt"></p>
+<h3 id="设置操纵系统镜像"><a href="#设置操纵系统镜像" class="headerlink" title="设置操纵系统镜像"></a>设置操纵系统镜像</h3><p><img src="%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E9%95%9C%E5%83%8F.png" srcset="/img/loading.gif" alt="alt"></p>
+<h2 id="15-开启虚拟机，安装操作系统"><a href="#15-开启虚拟机，安装操作系统" class="headerlink" title="15.开启虚拟机，安装操作系统"></a>15.开启虚拟机，安装操作系统</h2><h2 id="16-语言选择"><a href="#16-语言选择" class="headerlink" title="16.语言选择"></a>16.语言选择</h2><p><img src="%E8%AF%AD%E8%A8%80%E9%80%89%E6%8B%A9.png" srcset="/img/loading.gif" alt="alt"></p>
+<h2 id="17-选择安装的软件"><a href="#17-选择安装的软件" class="headerlink" title="17.选择安装的软件"></a>17.选择安装的软件</h2><p><img src="%E9%80%89%E6%8B%A9%E5%AE%89%E8%A3%85%E7%9A%84%E8%BD%AF%E4%BB%B6.png" srcset="/img/loading.gif" alt="alt"></p>
+<h2 id="18-安装位置自定义分区"><a href="#18-安装位置自定义分区" class="headerlink" title="18.安装位置自定义分区"></a>18.安装位置自定义分区</h2><p><img src="%E5%AE%89%E8%A3%85%E4%BD%8D%E7%BD%AE%E8%87%AA%E5%AE%9A%E4%B9%89%E5%88%86%E5%8C%BA.png" srcset="/img/loading.gif" alt="alt"></p>
+<h3 id="引导区配置"><a href="#引导区配置" class="headerlink" title="引导区配置"></a>引导区配置</h3><p><img src="%E5%BC%95%E5%AF%BC%E5%8C%BA.png" srcset="/img/loading.gif" alt="alt"></p>
+<h3 id="交换区配置"><a href="#交换区配置" class="headerlink" title="交换区配置"></a>交换区配置</h3><p><img src="%E4%BA%A4%E6%8D%A2%E5%8C%BA%E9%85%8D%E7%BD%AE.png" srcset="/img/loading.gif" alt="alt"></p>
+<h3 id="根分区配置"><a href="#根分区配置" class="headerlink" title="根分区配置"></a>根分区配置</h3><p><img src="%E6%A0%B9%E5%88%86%E5%8C%BA%E9%85%8D%E7%BD%AE.png" srcset="/img/loading.gif" alt="alt"></p>
+<h2 id="19-网络主机名配置"><a href="#19-网络主机名配置" class="headerlink" title="19.网络主机名配置"></a>19.网络主机名配置</h2><h3 id="主机名配置"><a href="#主机名配置" class="headerlink" title="主机名配置"></a>主机名配置</h3><p><img src="%E4%B8%BB%E6%9C%BA%E5%90%8D%E9%85%8D%E7%BD%AE.png" srcset="/img/loading.gif" alt="alt"></p>
+<h3 id="网络配置"><a href="#网络配置" class="headerlink" title="网络配置"></a>网络配置</h3><p><img src="%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE.png" srcset="/img/loading.gif" alt="alt"></p>
+<h2 id="20-安装操作系统"><a href="#20-安装操作系统" class="headerlink" title="20.安装操作系统"></a>20.安装操作系统</h2><p><img src="%E5%AE%89%E8%A3%85%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F.png" srcset="/img/loading.gif" alt="alt"></p>
+<h2 id="21-关闭防火墙"><a href="#21-关闭防火墙" class="headerlink" title="21.关闭防火墙"></a>21.关闭防火墙</h2><pre><code class="hljs routeros">systemctl <span class="hljs-builtin-name">disable</span> firewalld</code></pre>
 
-import com.alibaba.fastjson.JSON;
-import org.apache.commons.lang3.ArrayUtils;
+<h2 id="22-关闭SeLinux"><a href="#22-关闭SeLinux" class="headerlink" title="22.关闭SeLinux"></a>22.关闭SeLinux</h2><pre><code class="hljs arduino">vim etc/selinux/<span class="hljs-built_in">config</span></code></pre>
 
-import java.util.Random;
+<p><img src="%E5%85%B3%E9%97%ADse.png" srcset="/img/loading.gif" alt="alt"></p>
+<h2 id="23-重启操作系统"><a href="#23-重启操作系统" class="headerlink" title="23.重启操作系统"></a>23.重启操作系统</h2><pre><code class="hljs ebnf"><span class="hljs-attribute">reboot</span></code></pre>
 
-<span class="hljs-comment">/**</span>
-<span class="hljs-comment"> * 三路快速排序</span>
-<span class="hljs-comment"> * 等于的部分不进行排序</span>
-<span class="hljs-comment"> */</span>
-public <span class="hljs-keyword">class</span> QuickSort3 &#123;
-    public static void main(String<span class="hljs-literal">[]</span> args) &#123;
-        <span class="hljs-built_in">int</span><span class="hljs-literal">[]</span> arr = &#123;<span class="hljs-number">1</span>,<span class="hljs-number">7</span>,<span class="hljs-number">2</span>,<span class="hljs-number">0</span>,<span class="hljs-number">9</span>,<span class="hljs-number">3</span>,<span class="hljs-number">8</span>,<span class="hljs-number">7</span>,<span class="hljs-number">6</span>&#125;;
-        sort(arr,<span class="hljs-number">9</span>);
-        <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">System</span>.</span></span>out.println(<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">JSON</span>.</span></span><span class="hljs-keyword">to</span><span class="hljs-constructor">JSONString(<span class="hljs-params">arr</span>)</span>);
-    &#125;
+<h2 id="修改ip"><a href="#修改ip" class="headerlink" title="修改ip"></a>修改ip</h2><pre><code class="hljs awk">vim  <span class="hljs-regexp">/etc/</span>sysconfig<span class="hljs-regexp">/network-scripts/i</span>fcfg-ens33</code></pre>
 
-    public static void sort(<span class="hljs-built_in">int</span><span class="hljs-literal">[]</span> arr, <span class="hljs-built_in">int</span> n) &#123;
-        <span class="hljs-constructor">__sort(<span class="hljs-params">arr</span>,0,<span class="hljs-params">n</span>-1)</span>;
-    &#125;
+<p><img src="ip.png" srcset="/img/loading.gif" alt="alt"></p>
+<h2 id="修改主机名"><a href="#修改主机名" class="headerlink" title="修改主机名"></a>修改主机名</h2><pre><code class="hljs vim"><span class="hljs-keyword">vim</span> /etc/<span class="hljs-built_in">hostname</span></code></pre>
+<p><img src="hostname.png" srcset="/img/loading.gif" alt="alt"></p>
 
-    <span class="hljs-keyword">private</span> static void <span class="hljs-constructor">__sort(<span class="hljs-params">int</span>[] <span class="hljs-params">arr</span>, <span class="hljs-params">int</span> <span class="hljs-params">l</span>, <span class="hljs-params">int</span> <span class="hljs-params">r</span>)</span> &#123;
-        <span class="hljs-keyword">if</span> (r - l &lt;= <span class="hljs-number">15</span>) &#123;
-            <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">InsertSort</span>.</span></span>sort(arr, l, r);
-            return;
-        &#125;
-
-        Random random = <span class="hljs-keyword">new</span> <span class="hljs-constructor">Random(System.<span class="hljs-params">currentTimeMillis</span>()</span>);
-        <span class="hljs-built_in">int</span> randomNum = random.next<span class="hljs-constructor">Int(<span class="hljs-params">r</span> - <span class="hljs-params">l</span> + 1)</span> + l;
-        <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">ArrayUtils</span>.</span></span>swap(arr, randomNum, l);
-
-        <span class="hljs-comment">//[l+1,lt] &lt; arr[l]; (lt,i) = arr[l]; [gt,r] &gt; arr[l]</span>
-        <span class="hljs-built_in">int</span> lt = l, gt = r + <span class="hljs-number">1</span>;
-
-        for (<span class="hljs-built_in">int</span> i = l + <span class="hljs-number">1</span>; i &lt; gt; i++) &#123;
-            <span class="hljs-keyword">if</span> (arr<span class="hljs-literal">[<span class="hljs-identifier">i</span>]</span> &lt; arr<span class="hljs-literal">[<span class="hljs-identifier">l</span>]</span>) &#123;
-                <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">ArrayUtils</span>.</span></span>swap(arr, lt + <span class="hljs-number">1</span>, i);
-                lt++;
-                i++;
-            &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (arr<span class="hljs-literal">[<span class="hljs-identifier">i</span>]</span> &gt; arr<span class="hljs-literal">[<span class="hljs-identifier">l</span>]</span>) &#123;
-                <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">ArrayUtils</span>.</span></span>swap(arr, i, gt - <span class="hljs-number">1</span>);
-                gt--;
-            &#125; <span class="hljs-keyword">else</span> &#123;
-                i++;
-            &#125;
-        &#125;
-
-        <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">ArrayUtils</span>.</span></span>swap(arr, l, lt);
-        <span class="hljs-constructor">__sort(<span class="hljs-params">arr</span>, <span class="hljs-params">l</span>, <span class="hljs-params">lt</span> - 1)</span>;
-        <span class="hljs-constructor">__sort(<span class="hljs-params">arr</span>, <span class="hljs-params">gt</span>, <span class="hljs-params">r</span>)</span>;
-    &#125;
-&#125;</code></pre>
             </article>
             <hr>
             <div>
@@ -243,7 +228,7 @@ public <span class="hljs-keyword">class</span> QuickSort3 &#123;
                   <div class="post-meta mr-3">
                     <i class="iconfont icon-category"></i>
                     
-                      <a class="hover-with-bg" href="/categories/Algorithm/">Algorithm</a>
+                      <a class="hover-with-bg" href="/categories/Linux/">Linux</a>
                     
                   </div>
                 
@@ -251,7 +236,7 @@ public <span class="hljs-keyword">class</span> QuickSort3 &#123;
                   <div class="post-meta">
                     <i class="iconfont icon-tags"></i>
                     
-                      <a class="hover-with-bg" href="/tags/basic/">basic</a>
+                      <a class="hover-with-bg" href="/tags/enviroment/">enviroment</a>
                     
                   </div>
                 
@@ -264,18 +249,12 @@ public <span class="hljs-keyword">class</span> QuickSort3 &#123;
                   <div class="post-prev col-6">
                     
                     
-                      <a href="/2020/06/27/%E5%88%9B%E5%BB%BA%E8%99%9A%E6%8B%9F%E6%9C%BA/">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">创建虚拟机</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </div>
                   <div class="post-next col-6">
                     
                     
-                      <a href="/2020/06/18/%E5%8F%8C%E8%B7%AF%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95/">
-                        <span class="hidden-mobile">双路快速排序算法</span>
+                      <a href="/2020/06/18/%E4%B8%89%E8%B7%AF%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95/">
+                        <span class="hidden-mobile">三路快速排序算法</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
@@ -415,7 +394,7 @@ public <span class="hljs-keyword">class</span> QuickSort3 &#123;
     var typed = new Typed('#subtitle', {
       strings: [
         '  ',
-        "三路快速排序算法&nbsp;",
+        "创建虚拟机&nbsp;",
       ],
       cursorChar: "_",
       typeSpeed: 70,
