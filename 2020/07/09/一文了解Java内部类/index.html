@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" type="image/png" href="/img/heart.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="Paulo Tian">
+  <meta name="keywords" content="">
+  <title>一文了解Java内部类 - Paulo&#39;s Blog</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_pjno9b9zyxs.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 80vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Paulo's Blog</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              Home</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/archives/">
+              <i class="iconfont icon-archive-fill"></i>
+              Archives</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/">
+              <i class="iconfont icon-category-fill"></i>
+              Categories</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/tags/">
+              <i class="iconfont icon-tags-fill"></i>
+              Tags</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              About</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/Friendship.png') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2020-07-09 21:12">
+                    July 9, 2020 pm
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    2.6k 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    31
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <p>文章内容输出来源：拉勾教育Java大数据训练营</p>
+<p>第一次接触内部类是在看Flink代码时，代码中有很多静态内部类的定义，因为自己是半路转的Java没有系统的学习过很多基础都不太了解，所以只是把静态内部类的写法当做了一种类的声明方法，没有太在意，直到用的时候才发现了问题。场景是这样的，我在外部类里面定义了一个静态内部类，外部类中有一个Spring注入的属性，这个属性是非静态的在静态内部类中不能访问，而我需要访问它，这要怎么办呢？<br>最后的解决方法是把这个静态内部类改成了非静态的，结果编译通过，运行一切正常。那么我为什么一开要定义成静态内部类呢？原因很简单因为我看的代码定义的内部类都是静态的。这时的我就很困惑静态内部类和非静态内部类到底有什么区别，什么时候要用静态的什么时候要用非静态的内部类呢？今天在大数据训练营课程的学习中终于明白了。</p>
+<h2 id="什么时候需要内部类"><a href="#什么时候需要内部类" class="headerlink" title="什么时候需要内部类"></a>什么时候需要内部类</h2><p>当一个类存在的价值仅仅是为某一个类服务时，可以将这个类定义成被服务类的内部类，这样可以隐藏类的实现细节方便访问外部类的私有成员</p>
+<p>其实Java的内部类一共有四种: <strong>普通内部类、静态内部类、方法内部类、匿名内部类</strong>, 下面分别来看一下</p>
+<h2 id="普通内部类"><a href="#普通内部类" class="headerlink" title="普通内部类"></a>普通内部类</h2><p>普通内部类的定义方式和一般的类相同，只是包含在另一个类中，定义形式如下:</p>
+<pre><code class="hljs arduino"><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">InnerClassTest</span> &#123;</span>
+    
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">int</span> property1 = <span class="hljs-number">1</span>;
+
+    <span class="hljs-comment">/**</span>
+<span class="hljs-comment">     * 普通内部类</span>
+<span class="hljs-comment">     */</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">NormalInnerClass</span>&#123;</span>
+
+
+        <span class="hljs-keyword">private</span> <span class="hljs-keyword">int</span> field1 = <span class="hljs-number">1</span>;
+
+        <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">NormalInnerClass</span><span class="hljs-params">()</span></span>&#123;
+            System.out.<span class="hljs-built_in">println</span>(<span class="hljs-string">"普通内部类的构造方法"</span>);
+        &#125;
+
+
+        <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">show</span><span class="hljs-params">()</span></span>&#123;
+            System.out.<span class="hljs-built_in">println</span>(<span class="hljs-string">"外部类中property1属性的值为: "</span>+property1);
+
+            System.out.<span class="hljs-built_in">println</span>(<span class="hljs-string">"当前类的field1属性的值为: "</span> + field1);
+        &#125;
+    &#125;
+&#125;</code></pre>
+
+<p>上面就是一个普通内部类的声明方式，除此之外我还为它添加了一些属性和方法，接下来我们来初始化这个内部类并调它的方法看一下。怎么样才可以初始化这个内部类呢？</p>
+<p>思考一下一个普通类内部的成员变量和方法要怎么访问呢？当然是通过类的实例.变量/方法名来访问，其实静态内部类也可以看做外部类的一个属性，所以怎么访问大家应该多少应该会猜到一些了吧，但结果可能和你猜想的并不一致。</p>
+<pre><code class="hljs arduino">
+<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">InnerClassTest</span> &#123;</span>
+
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">int</span> property1 = <span class="hljs-number">1</span>;
+
+
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-keyword">String</span>[] args)</span> </span>&#123;
+        <span class="hljs-comment">//声明一个外部类</span>
+        InnerClassTest ic = <span class="hljs-keyword">new</span> InnerClassTest();
+
+        <span class="hljs-comment">//声明一个普通内部类</span>
+        NormalInnerClass nic = ic.<span class="hljs-keyword">new</span> NormalInnerClass();
+        nic.show();
+    &#125;
+
+    <span class="hljs-comment">/**</span>
+<span class="hljs-comment">     * 普通内部类</span>
+<span class="hljs-comment">     */</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">NormalInnerClass</span>&#123;</span>
+
+
+        <span class="hljs-keyword">private</span> <span class="hljs-keyword">int</span> field1 = <span class="hljs-number">1</span>;
+
+        <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">NormalInnerClass</span><span class="hljs-params">()</span></span>&#123;
+            System.out.<span class="hljs-built_in">println</span>(<span class="hljs-string">"普通内部类的构造方法"</span>);
+        &#125;
+
+
+        <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">show</span><span class="hljs-params">()</span></span>&#123;
+            System.out.<span class="hljs-built_in">println</span>(<span class="hljs-string">"外部类中property1属性的值为: "</span>+property1);
+
+            System.out.<span class="hljs-built_in">println</span>(<span class="hljs-string">"当前类的field1属性的值为: "</span> + field1);
+        &#125;
+    &#125;
+&#125;</code></pre>
+
+<p>运行结果:</p>
+<p><img src="%E6%99%AE%E9%80%9A%E5%86%85%E9%83%A8%E7%B1%BB.png" srcset="/img/loading.gif" alt="alt"></p>
+<p>看一下main方法中的代码，你猜对了么？我第一次是完全没有想到是这么声明的</p>
+<p>还有一个比较有意思的问题，如果我们的外部类和内部类中有相同名字的属性要怎么访问？例如下面代码中的property2</p>
+<pre><code class="hljs arduino"><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">InnerClassTest</span> &#123;</span>
+
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">int</span> property1 = <span class="hljs-number">1</span>;
+
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">int</span> property2 = <span class="hljs-number">2</span>;
+
+
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-keyword">String</span>[] args)</span> </span>&#123;
+        <span class="hljs-comment">//声明一个外部类</span>
+        InnerClassTest ic = <span class="hljs-keyword">new</span> InnerClassTest();
+
+        <span class="hljs-comment">//声明一个普通内部类</span>
+        NormalInnerClass nic = ic.<span class="hljs-keyword">new</span> NormalInnerClass();
+        nic.show();
+
+        nic.show(<span class="hljs-number">4</span>);
+    &#125;
+
+    <span class="hljs-comment">/**</span>
+<span class="hljs-comment">     * 普通内部类</span>
+<span class="hljs-comment">     */</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">NormalInnerClass</span> &#123;</span>
+
+
+        <span class="hljs-keyword">private</span> <span class="hljs-keyword">int</span> field1 = <span class="hljs-number">1</span>;
+
+        <span class="hljs-keyword">private</span> <span class="hljs-keyword">int</span> property2 = <span class="hljs-number">3</span>;
+
+        <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">NormalInnerClass</span><span class="hljs-params">()</span> </span>&#123;
+            System.out.<span class="hljs-built_in">println</span>(<span class="hljs-string">"普通内部类的构造方法"</span>);
+        &#125;
+
+
+        <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">show</span><span class="hljs-params">()</span> </span>&#123;
+            System.out.<span class="hljs-built_in">println</span>(<span class="hljs-string">"外部类中property1属性的值为: "</span> + property1);
+
+            System.out.<span class="hljs-built_in">println</span>(<span class="hljs-string">"当前类的field1属性的值为: "</span> + field1);
+        &#125;
+
+        <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">show</span><span class="hljs-params">(<span class="hljs-keyword">int</span> property2)</span> </span>&#123;
+
+            System.out.<span class="hljs-built_in">println</span>(<span class="hljs-string">"当前方法中的property2: "</span> + property2);
+
+            System.out.<span class="hljs-built_in">println</span>(<span class="hljs-string">"内部类中property2属性的值为: "</span> + <span class="hljs-keyword">this</span>.property2);
+
+            System.out.<span class="hljs-built_in">println</span>(<span class="hljs-string">"外部类中property2属性的值为: "</span> + InnerClassTest.<span class="hljs-keyword">this</span>.property2);
+        &#125;
+    &#125;
+&#125;</code></pre>
+
+<p>运行结果:</p>
+<p><img src="%E6%99%AE%E9%80%9A%E5%86%85%E9%83%A8%E7%B1%BB2.png" srcset="/img/loading.gif" alt="alt"></p>
+<p>普通内部类已经讲完了，现在来描述一下它的特点吧：</p>
+<ol>
+<li>普通内部来可以和普通类一样定义成员变量、成员方法和构造方法</li>
+<li>普通内部类可以和普通类一样用final和abstract修饰</li>
+<li>普通内部类需要使用外部对象来创建</li>
+<li>如果普通内部类和外部类有相同名字的成员变量时需要加this，外部类的this需要通过类名.this获取</li>
+</ol>
+<h2 id="静态内部类"><a href="#静态内部类" class="headerlink" title="静态内部类"></a>静态内部类</h2><p>静态内部类只需要在普通内部类前面加一个static</p>
+<pre><code class="hljs arduino"><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">StaticInnerClassTest</span> &#123;</span>
+
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">int</span> property1 = <span class="hljs-number">1</span>;
+
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">int</span> property2 = <span class="hljs-number">2</span>;
+
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">int</span> property3 = <span class="hljs-number">3</span>;
+
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-keyword">String</span>[] args)</span> </span>&#123;
+
+
+    &#125;
+
+
+    <span class="hljs-comment">/**</span>
+<span class="hljs-comment">     * 静态内部类</span>
+<span class="hljs-comment">     */</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">StaticInnerClass</span> &#123;</span>
+
+        <span class="hljs-keyword">private</span> <span class="hljs-keyword">int</span> field1 = <span class="hljs-number">4</span>;
+
+
+        <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">int</span> property3 = <span class="hljs-number">5</span>;
+
+        <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">StaticInnerClass</span><span class="hljs-params">()</span> </span>&#123;
+            System.out.<span class="hljs-built_in">println</span>(<span class="hljs-string">"静态内部类的构造方法"</span>);
+        &#125;
+
+        <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">show</span><span class="hljs-params">()</span> </span>&#123;
+            System.out.<span class="hljs-built_in">println</span>(<span class="hljs-string">"外部类中property2属性的值为: "</span> + property2);
+
+            System.out.<span class="hljs-built_in">println</span>(<span class="hljs-string">"当前类的field1属性的值为: "</span> + field1);
+        &#125;
+
+        <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">show</span><span class="hljs-params">(<span class="hljs-keyword">int</span> property3)</span> </span>&#123;
+
+            System.out.<span class="hljs-built_in">println</span>(<span class="hljs-string">"当前方法中的property3: "</span> + property3);
+
+            System.out.<span class="hljs-built_in">println</span>(<span class="hljs-string">"内部类中property3属性的值为: "</span> + StaticInnerClass.property3);
+
+            System.out.<span class="hljs-built_in">println</span>(<span class="hljs-string">"外部类中property3属性的值为: "</span> + StaticInnerClassTest.property3);
+        &#125;
+
+    &#125;
+&#125;</code></pre>
+
+<p>同样的我在静态内部类中也定义了一些属性和方法，这些属性和方法要怎么访问呢？刚已经说过普通内部类可以看做外部类的属性，那么静态内部类就可以看做外部类的静态属性，我们知道静态属性或方法时通过<strong>类名.属性名/方法名</strong>来调用的并且静态方法中不能调用非静态的属性或者方法,所以我们在声明静态内部类时就可以直接通过<strong>外部类.静态内部类</strong>来声明了</p>
+<pre><code class="hljs arduino"><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">StaticInnerClassTest</span> &#123;</span>
+
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">int</span> property1 = <span class="hljs-number">1</span>;
+
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">int</span> property2 = <span class="hljs-number">2</span>;
+
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">int</span> property3 = <span class="hljs-number">3</span>;
+
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-keyword">String</span>[] args)</span> </span>&#123;
+        StaticInnerClass staticInnerClass = <span class="hljs-keyword">new</span> StaticInnerClass();
+        staticInnerClass.show();
+        staticInnerClass.show(<span class="hljs-number">6</span>);
+    &#125;
+
+
+    <span class="hljs-comment">/**</span>
+<span class="hljs-comment">     * 静态内部类</span>
+<span class="hljs-comment">     */</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">StaticInnerClass</span> &#123;</span>
+
+        <span class="hljs-keyword">private</span> <span class="hljs-keyword">int</span> field1 = <span class="hljs-number">4</span>;
+
+
+        <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">int</span> property3 = <span class="hljs-number">5</span>;
+
+        <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">StaticInnerClass</span><span class="hljs-params">()</span> </span>&#123;
+            System.out.<span class="hljs-built_in">println</span>(<span class="hljs-string">"静态内部类的构造方法"</span>);
+        &#125;
+
+        <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">show</span><span class="hljs-params">()</span> </span>&#123;
+            System.out.<span class="hljs-built_in">println</span>(<span class="hljs-string">"外部类中property2属性的值为: "</span> + property2);
+
+            System.out.<span class="hljs-built_in">println</span>(<span class="hljs-string">"当前类的field1属性的值为: "</span> + field1);
+        &#125;
+
+        <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">show</span><span class="hljs-params">(<span class="hljs-keyword">int</span> property3)</span> </span>&#123;
+
+            System.out.<span class="hljs-built_in">println</span>(<span class="hljs-string">"当前方法中的property3: "</span> + property3);
+
+            System.out.<span class="hljs-built_in">println</span>(<span class="hljs-string">"内部类中property3属性的值为: "</span> + StaticInnerClass.property3);
+
+            System.out.<span class="hljs-built_in">println</span>(<span class="hljs-string">"外部类中property3属性的值为: "</span> + StaticInnerClassTest.property3);
+        &#125;
+
+    &#125;
+&#125;</code></pre>
+<p>输出结果:</p>
+<p><img src="static.png" srcset="/img/loading.gif" alt="alt"></p>
+<p>静态内部类的特点:</p>
+<ol>
+<li>不能访问外部类中的非静态变量</li>
+<li>可以直接创建对象</li>
+<li>访问与外部类同名的属性时通过类名.即可访问</li>
+</ol>
+<h2 id="局部-方法-内部类"><a href="#局部-方法-内部类" class="headerlink" title="局部(方法)内部类"></a>局部(方法)内部类</h2><p>从名字就可以看出这种内部类数定义在方法中的</p>
+<pre><code class="hljs arduino"><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MethodInnerClassTest</span> &#123;</span>
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">int</span> property1 = <span class="hljs-number">1</span>;
+
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-keyword">String</span>[] args)</span> </span>&#123;
+        MethodInnerClassTest mc = <span class="hljs-keyword">new</span> MethodInnerClassTest();
+        mc.test();
+    &#125;
+
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">test</span><span class="hljs-params">()</span> </span>&#123;
+        <span class="hljs-keyword">final</span> <span class="hljs-keyword">int</span> field2 = <span class="hljs-number">3</span>;
+
+        <span class="hljs-comment">//方法内部类</span>
+        <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MethodInnerClass</span> &#123;</span>
+            <span class="hljs-keyword">private</span> <span class="hljs-keyword">int</span> field1 = <span class="hljs-number">2</span>;
+
+            <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">show</span><span class="hljs-params">()</span> </span>&#123;
+
+                property1 += <span class="hljs-number">1</span>;
+                System.out.<span class="hljs-built_in">println</span>(<span class="hljs-string">"外部类的property1: "</span> + property1);
+
+                field1 += <span class="hljs-number">1</span>;
+                System.out.<span class="hljs-built_in">println</span>(<span class="hljs-string">"内部类的field1: "</span>+ field1);
+
+                <span class="hljs-comment">//field2+=1;  访问方法中的变量必须由final修饰</span>
+                System.out.<span class="hljs-built_in">println</span>(<span class="hljs-string">"内部类的field2: "</span>+ field2);
+            &#125;
+        &#125;
+
+        MethodInnerClass mic = <span class="hljs-keyword">new</span> MethodInnerClass();
+        mic.show();
+    &#125;
+&#125;</code></pre>
+
+<p>输出结果:</p>
+<p><img src="method.png" srcset="/img/loading.gif" alt="alt"></p>
+<p>因为局部(方法)内部类是定义和作用域都在方法中,所以在test方法中声明了并定义了一个局部(方法)内部类，使用局部方法内部类访问外部方法中的变量时要求外部方法中的变量必须是由final修饰的，这样规定的原因是局部内部类在访问外部方法的变量时会创建一个变量的副本，为了保证数据的一致性要求变量不能修改。</p>
+<p>局部(方法)内部类的特点:</p>
+<ol>
+<li>类的定义在方法体中，只在当前方法体中可以使用</li>
+<li>没有访问修饰符</li>
+<li>可以使用外部方法的局部变量但必须是final的</li>
+</ol>
+<h2 id="匿名内部类"><a href="#匿名内部类" class="headerlink" title="匿名内部类"></a>匿名内部类</h2><p>匿名内部类相信很多小伙伴在不知不觉中已经用到了，一会你可能会恍然大悟，原来我一直在使用匿名内部类。。。<br>在学习匿名内部流之前先了解一下回调模式，回调模式是指如果一个方法的参数是接口类型，则调用该方法时需要创建并传递一个实现此接口的对象;而该方法在调用时会调用接口对象实现类的方法。<br>有些人可能已经恍然大悟！</p>
+<p>我们先定义一个接口</p>
+<pre><code class="hljs routeros">public<span class="hljs-built_in"> interface </span>AnonymousInterface &#123;
+    void show();
+&#125;</code></pre>
+
+<p>然后定义一个方法将这个接口作为形参</p>
+<pre><code class="hljs arduino"><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">AnonymousInterfaceTest</span> &#123;</span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-keyword">String</span>[] args)</span> </span>&#123;
+
+    &#125;
+
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">test</span><span class="hljs-params">(AnonymousInterface anonymousInterface)</span></span>&#123;
+        anonymousInterface.show();
+    &#125;
+&#125;</code></pre>
+
+<p>我们要怎么调用这个方法呢？接口是不能实例化的，所以我们要给这个接口写一个实现类传过来</p>
+<pre><code class="hljs angelscript"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-symbol">AnonymousInterfaceImpl</span> <span class="hljs-symbol">implements</span> <span class="hljs-symbol">AnonymousInterface</span> &#123;
+    <span class="hljs-keyword">public</span> <span class="hljs-built_in">void</span> show() &#123;
+        System.<span class="hljs-keyword">out</span>.println(<span class="hljs-string">"我是实现类"</span>);
+    &#125;
+&#125;</code></pre>
+
+<pre><code class="hljs arduino"><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">AnonymousInterfaceTest</span> &#123;</span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-keyword">String</span>[] args)</span> </span>&#123;
+        AnonymousInterfaceTest ait = <span class="hljs-keyword">new</span> AnonymousInterfaceTest();
+        ait.test(<span class="hljs-keyword">new</span> AnonymousInterfaceImpl());
+    &#125;
+
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">test</span><span class="hljs-params">(AnonymousInterface anonymousInterface)</span></span>&#123;
+        anonymousInterface.show();
+    &#125;
+&#125;</code></pre>
+
+<p>最终输出结果:<br><img src="Anonymous1.png" srcset="/img/loading.gif" alt="alt"></p>
+<p>虽然是可以但是我们需要额外定义一个类，在执行Java程序时还要将这个类的信息加载到方法区才能执行，有没有办法可以创建一个临时类在使用完后就销毁？答案是匿名类，匿名类的定义如下</p>
+<pre><code class="hljs arduino"><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">AnonymousInterfaceTest</span> &#123;</span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-keyword">String</span>[] args)</span> </span>&#123;
+        AnonymousInterfaceTest ait = <span class="hljs-keyword">new</span> AnonymousInterfaceTest();
+    
+        ait.test(<span class="hljs-keyword">new</span> AnonymousInterface()&#123;  <span class="hljs-comment">//匿名类的定义</span>
+            <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> show() &#123;
+                System.out.<span class="hljs-built_in">println</span>(<span class="hljs-string">"我也是实现类"</span>);
+            &#125;
+        &#125;);
+    &#125;
+
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">test</span><span class="hljs-params">(AnonymousInterface anonymousInterface)</span></span>&#123;
+        anonymousInterface.show();
+    &#125;
+&#125;</code></pre>
+
+<p>是不是似曾相识，在创建线程时是不是经常用到。</p>
+<p>匿名类的特点:</p>
+<ol>
+<li>接口作为形参时使用</li>
+<li>new的对象使用完成后就会被销毁</li>
+<li>java8开始可以使用lamda表达式</li>
+</ol>
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%8F%AD/">大数据班</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/07/03/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%8F%AD-%E6%A8%A1%E5%9D%97%E4%B8%80/">
+                        <span class="hidden-mobile">大数据班-模块一</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;TOC</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "一文了解Java内部类&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      searchFunc(path, 'local-search-input', 'local-search-result');
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>
